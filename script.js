@@ -1,32 +1,32 @@
 function drawIt() {
-  var ctx;
+  let ctx;
   let x;
   let y;
-  var dx = 2;
-  var dy = 4;
-  var WIDTH;
-  var HEIGHT;
-  var r = 10;
-  var paddlex;
-  var paddleh;
-  var paddlew;
-  var intervalId;
-  var rightDown = false;
-  var leftDown = false;
-  var bricks;
-  var NROWS;
-  var NCOLS;
-  var BRICKWIDTH;
-  var BRICKHEIGHT;
-  var PADDING;
-  var f = 0;
-  var rowcolors = ["#FF1C0A", "#FFFD0A", "#00A308", "#0008DB", "#EB0093"];
-  var paddlecolor = "#000000";
-  var ballcolor = "#333333";
-  var start = true;
-  var sekunde = 0;
-  var izpisTimer = "00:00";
-  var sekundeI, minuteI;
+  let dx = 2;
+  let dy = 4;
+  let WIDTH;
+  let HEIGHT;
+  let r = 10;
+  let paddlex;
+  let paddleh;
+  let paddlew;
+  let intervalId;
+  let rightDown = false;
+  let leftDown = false;
+  let bricks;
+  let NROWS;
+  let NCOLS;
+  let BRICKWIDTH;
+  let BRICKHEIGHT;
+  let PADDING;
+  let f = 0;
+  let rowcolors = ["#FF1C0A", "#FFFD0A", "#00A308", "#0008DB", "#EB0093"];
+  let paddlecolor = "#000000";
+  let ballcolor = "#333333";
+  let start = true;
+  let sekunde = 0;
+  let izpisTimer = "00:00";
+  let sekundeI, minuteI;
 
 
 
@@ -47,11 +47,11 @@ function drawIt() {
   }
 
   function initbricks() { //inicializacija opek - polnjenje v tabelo
-    var i, j;
+    let i, j;
     NROWS = 7;
     NCOLS = 7;
     BRICKWIDTH = (WIDTH / NCOLS) - 1;
-    BRICKHEIGHT = 30;
+    BRICKHEIGHT = 40;
     PADDING = 3;
     bricks = new Array(NROWS);
     for (i = 0; i < NROWS; i++) {
