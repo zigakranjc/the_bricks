@@ -27,6 +27,15 @@ function drawIt() {
   let sekunde = 0;
   let izpisTimer = "00:00";
   let sekundeI, minuteI;
+  //element, ki poveča paddle
+  let drop = {
+    x: 0,
+    y: -20,
+    w: 20,
+    h: 20,
+    speed: 3,
+    active: false
+  };
 
 
 
@@ -34,7 +43,7 @@ function drawIt() {
     ctx = $('#canvas')[0].getContext("2d");
     WIDTH = $("#canvas").width();
     HEIGHT = $("#canvas").height();
-    x = HEIGHT/ 2;
+    x = HEIGHT / 2;
     y = WIDTH / 2;
     sekunde = 0;
     izpisTimer = "00:00";
@@ -102,6 +111,14 @@ function drawIt() {
 
   function draw() {
     clear();
+
+    //random spuščanje elemnta, ki poveča paddle
+    if (!drop.active && Math.random() < 0.01) {
+      drop.active = true;
+      drop.x = Math.random() * (WIDTH - drop.w);
+      drop.y = -drop.h;
+    }
+
     if (start == true) {
       sekunde++;
       sekundeI = ((sekundeI = (sekunde % 60)) > 9) ? sekundeI : "0" + sekundeI;
@@ -113,8 +130,8 @@ function drawIt() {
       $("#cas").html(izpisTimer);
     }
 
-    
-    circle(x,y , 10);
+
+    circle(x, y, 10);
     //premik ploščice levo in desno
     if (rightDown) {
       if ((paddlex + paddlew) < WIDTH) {
@@ -132,19 +149,29 @@ function drawIt() {
     }
     rect(paddlex, HEIGHT - paddleh, paddlew, paddleh);
 
-    for (i = 0; i < NROWS; i++) {
-      ctx.fillStyle = rowcolors[i]; //barvanje vrstic
-      for (j = 0; j < NCOLS; j++) {
-        if (bricks[i][j] == 1) {
-          rect((j * (BRICKWIDTH + PADDING)) + PADDING,
-            (i * (BRICKHEIGHT + PADDING)) + PADDING,
-            BRICKWIDTH, BRICKHEIGHT);
-        }
-      }
+    //premik in risanje elementa, ki poveča paddle
+    if (drop.active) {
+      drop.y += drop.speed;
+      ctx.fillStyle = "#ffa500";
+      circle(drop.x, drop.y, drop.w / 2);
     }
 
-    //riši opeke
+    //ulov in povečanje paddle
+    if (drop.active &&
+      drop.y + drop.h >= HEIGHT - paddleh &&
+      drop.x + drop.w >= paddlex &&
+      drop.x <= paddlex + paddlew) {
+      drop.active = false;
+      paddlew += 50;
+    }
+
+    //če element za povečavo paddle pade mimo
+    if (drop.active && drop.y > HEIGHT) {
+      drop.active = false;
+    }
+
     for (i = 0; i < NROWS; i++) {
+      ctx.fillStyle = rowcolors[i]; //barvanje vrstic
       for (j = 0; j < NCOLS; j++) {
         if (bricks[i][j] == 1) {
           rect((j * (BRICKWIDTH + PADDING)) + PADDING,
