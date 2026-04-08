@@ -1,12 +1,13 @@
 function drawIt() {
   let ctx;
+  let balls;
   let x;
   let y;
   let dx = 2;
   let dy = 4;
+  let r = 10;
   let WIDTH;
   let HEIGHT;
-  let r = 10;
   let paddlex;
   let paddleh;
   let paddlew;
@@ -34,7 +35,8 @@ function drawIt() {
     w: 20,
     h: 20,
     speed: 3,
-    active: false
+    active: false,
+    kind: "paddle" // "paddle" ali "ball"
   };
 
 
@@ -43,8 +45,7 @@ function drawIt() {
     ctx = $('#canvas')[0].getContext("2d");
     WIDTH = $("#canvas").width();
     HEIGHT = $("#canvas").height();
-    x = HEIGHT / 2;
-    y = WIDTH / 2;
+    balls = [{ x: WIDTH / 2, y: HEIGHT / 2, dx: 2, dy: 4 }];
     sekunde = 0;
     izpisTimer = "00:00";
     init_paddle();
@@ -112,11 +113,12 @@ function drawIt() {
   function draw() {
     clear();
 
-    //random spuščanje elemnta, ki poveča paddle
-    if (!drop.active && Math.random() < 0.01) {
+    //random spuščanje elemnta, ki poveča paddle ali število žogic
+    if (!drop.active && Math.random() < 0.001) {
       drop.active = true;
       drop.x = Math.random() * (WIDTH - drop.w);
       drop.y = -drop.h;
+      drop.kind = Math.random() < 0.5 ? "paddle" : "ball";
     }
 
     if (start == true) {
@@ -130,8 +132,46 @@ function drawIt() {
       $("#cas").html(izpisTimer);
     }
 
+    for (let i = balls.length - 1; i >= 0; i--) {
+      const ball = balls[i];
+      ctx.fillStyle = ballcolor;
+      circle(ball.x, ball.y, r);
 
-    circle(x, y, 10);
+      rowheight = BRICKHEIGHT + PADDING + f / 2; // Smo zadeli opeko?
+      colwidth = BRICKWIDTH + PADDING + f / 2;
+      row = Math.floor(ball.y / rowheight);
+      col = Math.floor(ball.x / colwidth);
+
+      // Če smo zadeli opeko, vrni povratno kroglo in označi v tabeli, da opeke ni več
+      if (ball.y < NROWS * rowheight && row >= 0 && col >= 0 && bricks[row][col] == 1) {
+        ball.dy = -ball.dy;
+        bricks[row][col] = 0;
+      }
+
+      if (ball.x + ball.dx > WIDTH - r || ball.x + ball.dx < 0 + r)
+        ball.dx = -ball.dx;
+
+      if (ball.y + ball.dy < 0 + r)
+        ball.dy = -ball.dy;
+      else if (ball.y + ball.dy > HEIGHT - paddleh - r) {
+        start = false;
+        if (ball.x > paddlex && ball.x < paddlex + paddlew) {
+          ball.dx = 8 * ((ball.x - (paddlex + paddlew / 2)) / paddlew);
+          ball.dy = -ball.dy;
+          start = true;
+        } else if (ball.y + ball.dy > HEIGHT - r) {
+          balls.splice(i, 1);
+          if (balls.length === 0) {
+            clearInterval(intervalId);
+          }
+        }
+
+      }
+
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+    }
+
     //premik ploščice levo in desno
     if (rightDown) {
       if ((paddlex + paddlew) < WIDTH) {
@@ -147,14 +187,17 @@ function drawIt() {
         paddlex = 0;
       }
     }
+
+    ctx.fillStyle = paddlecolor;
     rect(paddlex, HEIGHT - paddleh, paddlew, paddleh);
 
     //premik in risanje elementa, ki poveča paddle
     if (drop.active) {
       drop.y += drop.speed;
-      ctx.fillStyle = "#ffa500";
+      ctx.fillStyle = (drop.kind === "ball") ? "#007bff" : "#ffa500";
       circle(drop.x, drop.y, drop.w / 2);
     }
+
 
     //ulov in povečanje paddle
     if (drop.active &&
@@ -162,8 +205,19 @@ function drawIt() {
       drop.x + drop.w >= paddlex &&
       drop.x <= paddlex + paddlew) {
       drop.active = false;
-      paddlew += 50;
+
+      if (drop.kind === "paddle") {
+        paddlew += 50;
+      } else if (drop.kind === "ball") {
+        balls.push({
+          x: paddlex + paddlew / 2,
+          y: HEIGHT - paddleh - r - 1,
+          dx: 2,
+          dy: -4
+        });
+      }
     }
+
 
     //če element za povečavo paddle pade mimo
     if (drop.active && drop.y > HEIGHT) {
@@ -180,31 +234,6 @@ function drawIt() {
         }
       }
     }
-
-    rowheight = BRICKHEIGHT + PADDING + f / 2; //Smo zadeli opeko?
-    colwidth = BRICKWIDTH + PADDING + f / 2;
-    row = Math.floor(y / rowheight);
-    col = Math.floor(x / colwidth);
-    //Če smo zadeli opeko, vrni povratno kroglo in označi v tabeli, da opeke ni več
-    if (y < NROWS * rowheight && row >= 0 && col >= 0 && bricks[row][col] == 1) {
-      dy = -dy; bricks[row][col] = 0;
-    }
-    if (x + dx > WIDTH - r || x + dx < 0 + r)
-      dx = -dx;
-    if (y + dy < 0 + r)
-      dy = -dy;
-    else if (y + dy > HEIGHT - paddleh - r) {
-      start = false;
-      if (x > paddlex && x < paddlex + paddlew) {
-        dx = 8 * ((x - (paddlex + paddlew / 2)) / paddlew);
-        dy = -dy;
-        start = true;
-      } else if (y + dy > HEIGHT - r) {
-        clearInterval(intervalId);
-      }
-    }
-    x += dx;
-    y += dy;
   }
   init();
 }
