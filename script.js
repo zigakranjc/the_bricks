@@ -5,7 +5,7 @@ function drawIt() {
   let y;
   let dx = 2;
   let dy = 4;
-  let r = 10;
+  let r = 15;
   let WIDTH;
   let HEIGHT;
   let paddlex;
@@ -36,8 +36,12 @@ function drawIt() {
     h: 20,
     speed: 3,
     active: false,
-    kind: "paddle" // "paddle" ali "ball"
   };
+  const imgMoney = new Image();
+  imgMoney.src = "img/money.jpg";
+  const imgCoin = new Image();
+  imgCoin.src = "img/coin.png";
+
 
 
 
@@ -60,7 +64,7 @@ function drawIt() {
     let i, j;
     NROWS = 7;
     NCOLS = 7;
-    BRICKWIDTH = (WIDTH / NCOLS) - 1;
+    BRICKWIDTH = 139;
     BRICKHEIGHT = 40;
     PADDING = 3;
     bricks = new Array(NROWS);
@@ -73,7 +77,16 @@ function drawIt() {
   }
 
   function circle(x, y, r) {
+    ctx.drawImage(
+      imgCoin,
+      x - r, y - r,   // zgornji levi kot
+      r * 2, r * 2    // širina, višina
+    );
+  }
+
+  function circleDrop(x, y, r) {
     ctx.beginPath();
+    ctx.fillStyle = "#0dff00";
     ctx.arc(x, y, r, 0, Math.PI * 2, true);
     ctx.closePath();
     ctx.fill();
@@ -93,7 +106,7 @@ function drawIt() {
   function init_paddle() {
     paddlex = WIDTH / 2;
     paddleh = 10;
-    paddlew = 75;
+    paddlew = 100;
   }
 
   function onKeyDown(evt) {
@@ -113,12 +126,11 @@ function drawIt() {
   function draw() {
     clear();
 
-    //random spuščanje elemnta, ki poveča paddle ali število žogic
+    //random spuščanje elemnta, ki poveča paddle
     if (!drop.active && Math.random() < 0.001) {
       drop.active = true;
       drop.x = Math.random() * (WIDTH - drop.w);
       drop.y = -drop.h;
-      drop.kind = Math.random() < 0.5 ? "paddle" : "ball";
     }
 
     if (start == true) {
@@ -194,10 +206,8 @@ function drawIt() {
     //premik in risanje elementa, ki poveča paddle
     if (drop.active) {
       drop.y += drop.speed;
-      ctx.fillStyle = (drop.kind === "ball") ? "#007bff" : "#ffa500";
-      circle(drop.x, drop.y, drop.w / 2);
+      circleDrop(drop.x, drop.y, drop.w / 2);
     }
-
 
     //ulov in povečanje paddle
     if (drop.active &&
@@ -205,35 +215,32 @@ function drawIt() {
       drop.x + drop.w >= paddlex &&
       drop.x <= paddlex + paddlew) {
       drop.active = false;
-
-      if (drop.kind === "paddle") {
-        paddlew += 50;
-      } else if (drop.kind === "ball") {
-        balls.push({
-          x: paddlex + paddlew / 2,
-          y: HEIGHT - paddleh - r - 1,
-          dx: 2,
-          dy: -4
-        });
-      }
+      paddlew += 50;
     }
-
 
     //če element za povečavo paddle pade mimo
     if (drop.active && drop.y > HEIGHT) {
       drop.active = false;
     }
 
-    for (i = 0; i < NROWS; i++) {
-      ctx.fillStyle = rowcolors[i]; //barvanje vrstic
-      for (j = 0; j < NCOLS; j++) {
+    for (let i = 0; i < NROWS; i++) {
+      for (let j = 0; j < NCOLS; j++) {
         if (bricks[i][j] == 1) {
-          rect((j * (BRICKWIDTH + PADDING)) + PADDING,
+          ctx.drawImage(
+            imgMoney,
+            (j * (BRICKWIDTH + PADDING)) + PADDING,
             (i * (BRICKHEIGHT + PADDING)) + PADDING,
-            BRICKWIDTH, BRICKHEIGHT);
+            BRICKWIDTH, BRICKHEIGHT
+          );
         }
       }
     }
   }
   init();
 }
+
+
+
+
+
+
