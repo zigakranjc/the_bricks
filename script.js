@@ -11,6 +11,8 @@ function drawIt() {
   let paddlex;
   let paddleh;
   let paddlew;
+  let paddleBaseW;  //za spreminjanje paddle sirine nazaj na normalno po powerup
+  let paddleBoostUntil = 0; //za spreminjanje paddle sirine nazaj na normalno po powerup
   let intervalId;
   let rightDown = false;
   let leftDown = false;
@@ -107,6 +109,7 @@ function drawIt() {
     paddlex = WIDTH / 2;
     paddleh = 10;
     paddlew = 100;
+    paddleBaseW = paddlew;
   }
 
   function onKeyDown(evt) {
@@ -215,7 +218,12 @@ function drawIt() {
       drop.x + drop.w >= paddlex &&
       drop.x <= paddlex + paddlew) {
       drop.active = false;
-      paddlew += 50;
+      paddlew = paddleBaseW + 50;
+      paddleBoostUntil = sekunde + 700;
+    }
+
+    if (paddlew > paddleBaseW && sekunde >= paddleBoostUntil) {
+      paddlew = paddleBaseW;
     }
 
     //če element za povečavo paddle pade mimo
