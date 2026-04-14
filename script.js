@@ -5,7 +5,7 @@ function drawIt() {
   let y;
   let dx = 2;
   let dy = 4;
-  let r = 15;
+  let r = 10;
   let WIDTH;
   let HEIGHT;
   let paddlex;
@@ -45,8 +45,6 @@ function drawIt() {
   imgCoin.src = "img/coin.png";
 
 
-
-
   function init() {
     ctx = $('#canvas')[0].getContext("2d");
     WIDTH = $("#canvas").width();
@@ -64,10 +62,10 @@ function drawIt() {
 
   function initbricks() { //inicializacija opek - polnjenje v tabelo
     let i, j;
-    NROWS = 7;
-    NCOLS = 7;
-    BRICKWIDTH = 139;
-    BRICKHEIGHT = 40;
+    NROWS = 5;
+    NCOLS = 9;
+    BRICKWIDTH = 74.4;
+    BRICKHEIGHT = 30;
     PADDING = 3;
     bricks = new Array(NROWS);
     for (i = 0; i < NROWS; i++) {
@@ -168,13 +166,13 @@ function drawIt() {
 
       if (ball.y + ball.dy < 0 + r)
         ball.dy = -ball.dy;
-      else if (ball.y + ball.dy > HEIGHT - paddleh - r) {
+      else if (ball.y + ball.dy + r >= HEIGHT - paddleh) {
         start = false;
-        if (ball.x > paddlex && ball.x < paddlex + paddlew) {
+        if (ball.x + r >= paddlex && ball.x - r <= paddlex + paddlew) {
           ball.dx = 8 * ((ball.x - (paddlex + paddlew / 2)) / paddlew);
           ball.dy = -ball.dy;
           start = true;
-        } else if (ball.y + ball.dy > HEIGHT - r) {
+        } else if (ball.y - r > HEIGHT) {
           balls.splice(i, 1);
           if (balls.length === 0) {
             clearInterval(intervalId);
