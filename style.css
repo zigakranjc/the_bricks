@@ -2,21 +2,20 @@
     margin:0;
     padding:0;
 }
-h1{
-    text-align: center;
-}
 body{
     display: flex;
     align-items: center;
     justify-content: center;
-    
 }
 #canvas{
     border: 2px solid;
     background-color: aliceblue;
 }
+#bannerDiv{
+    display: flex;
+    align-items: center;
+    justify-content: center;    
+}
 #banner{
-    height: 100;
-    display: block;
-    margin:auto;
+    height: 100px;
 }

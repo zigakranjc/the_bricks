@@ -5,7 +5,7 @@ function drawIt() {
   let y;
   let dx = 2;
   let dy = 4;
-  let r = 10;
+  let r = 15;
   let WIDTH;
   let HEIGHT;
   let paddlex;
