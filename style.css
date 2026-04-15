@@ -1,21 +1,51 @@
-*{
-    margin:0;
-    padding:0;
+* {
+    margin: 0;
+    padding: 0;
 }
-body{
+
+body {
     display: flex;
     align-items: center;
     justify-content: center;
 }
-#canvas{
+
+#canvas {
     border: 2px solid;
     background-color: aliceblue;
 }
-#bannerDiv{
+
+#game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#canvasDiv {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+#imgDesna{
+    padding-left: 10%;
+}
+
+#imgLeva{
+    padding-right: 10%;
+}
+
+#bannerDiv {
     display: flex;
     align-items: center;
-    justify-content: center;    
+    justify-content: center;
 }
-#banner{
+
+#banner {
     height: 100px;
+}
+#powerupTimer {
+  font-size: 20px;
+  color: yellow;
+  font-weight: bold;
 }
