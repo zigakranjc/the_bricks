@@ -7,6 +7,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-x: hidden;
+    background-image:url(img/bg.png);
+
 }
 
 #canvas {
@@ -27,12 +30,10 @@ body {
     justify-content: center;
 }
 
-#imgDesna{
-    padding-left: 10%;
-}
-
-#imgLeva{
-    padding-right: 10%;
+#canvas{
+    background-size:cover;
+    background-repeat: no-repeat;
+    background-position-y: -30px;
 }
 
 #bannerDiv {
@@ -48,4 +49,32 @@ body {
   font-size: 20px;
   color: yellow;
   font-weight: bold;
+}
+
+#playBtn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  font-size: 40px;
+  padding: 20px 50px;
+  border: none;
+  border-radius: 15px;
+  
+  background: gold;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+
+  animation: bounce 1s infinite;
+}
+
+/* animacija skakanja */
+@keyframes bounce {
+  0%   { transform: translate(-50%, -50%) translateY(0); }
+  50%  { transform: translate(-50%, -50%) translateY(-20px); }
+  100% { transform: translate(-50%, -50%) translateY(0); }
 }

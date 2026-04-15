@@ -28,7 +28,7 @@ function drawIt() {
   let sekunde = 0;
   let izpisTimer = "00:00";
   let sekundeI, minuteI;
-  //element, ki poveča paddle
+  //element, ki poveča paddleinti
   let drop = {
     x: 0,
     y: -20,
@@ -48,6 +48,10 @@ function drawIt() {
 
 
   function init() {
+    if (intervalId) {
+      clearInterval(intervalId); // <-- ustavi starega(ko sm refreshu je če ne žogica šla bl hitro)
+    }
+    const playBtn = document.getElementById("playBtn");
     ctx = $('#canvas')[0].getContext("2d");
     WIDTH = $("#canvas").width();
     HEIGHT = $("#canvas").height();
@@ -165,16 +169,16 @@ function drawIt() {
       }
 
       else if (hitBricks >= 10 && hitBricks < 20) {
-        $("#imgLeva, #imgDesna").attr("src", "img/img1.jpg").css("visibility", "visible");
+        $("#imgLeva, #imgDesna").attr("src", "img/money1.png").css("visibility", "visible");
       }
       else if (hitBricks >= 20 && hitBricks < 30) {
-        $("#imgLeva, #imgDesna").attr("src", "img/img2.jpg").css("visibility", "visible");
+        $("#imgLeva, #imgDesna").attr("src", "img/money2.png").css("visibility", "visible");
       }
       else if (hitBricks >= 30 && hitBricks < 40) {
-        $("#imgLeva, #imgDesna").attr("src", "img/img3.jpg").css("visibility", "visible");
+        $("#imgLeva, #imgDesna").attr("src", "img/money3.png").css("visibility", "visible");
       }
       else if (hitBricks >= 40) {
-        $("#imgLeva, #imgDesna").attr("src", "img/img4.jpg").css("visibility", "visible");
+        $("#imgLeva, #imgDesna").attr("src", "img/money4.png").css("visibility", "visible");
       }
     }
 
@@ -191,6 +195,7 @@ function drawIt() {
         start = true;
       } else if (ball.y - r > HEIGHT) {
         clearInterval(intervalId);
+        document.getElementById("playBtn").style.display = "block";
       }
 
     }
@@ -247,10 +252,11 @@ function drawIt() {
         paddleBoostUntil = Date.now() + 7000;
       }
       powerup.currentTime = 0;
+      powerup.volume = 0.4;
       powerup.play();
     }
 
-    if (paddlew > paddleBaseW && sekunde >= paddleBoostUntil) {
+    if (paddlew > paddleBaseW && Date.now() >= paddleBoostUntil) {
       paddlew = paddleBaseW;
     }
 
@@ -272,8 +278,24 @@ function drawIt() {
       }
     }
   }
-  init();
+  function startGame() {
+    init();
+    playBtn.style.display = "none";
+  }
+
+  // klik
+  playBtn.addEventListener("click", function () {
+    startGame();
+  });
+
+  // space tipka
+  document.addEventListener("keydown", function (evt) {
+    if (evt.keyCode === 32) { // 32 = SPACE
+      startGame();
+    }
+  });
 }
+
 
 
 
