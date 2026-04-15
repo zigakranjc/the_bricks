@@ -43,7 +43,8 @@ function drawIt() {
   imgMoney.src = "img/money.jpg";
   const imgCoin = new Image();
   imgCoin.src = "img/coin.png";
-
+  let currentImg = 0; // 0 = nobena slika
+  const imgIntervals = [30, 60, 90, 120]; // sekunde za vsako sliko
 
   function init() {
     ctx = $('#canvas')[0].getContext("2d");
@@ -140,9 +141,17 @@ function drawIt() {
       minuteI = ((minuteI = Math.floor(sekunde / 60)) > 9) ? minuteI : "0" + minuteI;
       izpisTimer = minuteI + ":" + sekundeI;
       $("#cas").html(izpisTimer);
-    } else {
-      sekunde = 0;
-      $("#cas").html(izpisTimer);
+      if (sekunde < 700) {
+        $("#imgLeva, #imgDesna").css("visibility", "hidden");
+      } else if (sekunde < 1500) {
+        $("#imgLeva, #imgDesna").attr("src", "img/img1.jpg").css("visibility", "visible");
+      } else if (sekunde < 2000) {
+        $("#imgLeva, #imgDesna").attr("src", "img/img2.jpg").css("visibility", "visible");
+      } else if (sekunde < 3000) {
+        $("#imgLeva, #imgDesna").attr("src", "img/img3.jpg").css("visibility", "visible");
+      } else {
+        $("#imgLeva, #imgDesna").attr("src", "img/img4.jpg").css("visibility", "visible");
+      }
     }
 
     for (let i = balls.length - 1; i >= 0; i--) {
