@@ -1,4 +1,5 @@
 function drawIt() {
+    const playBtn = document.getElementById("playBtn");
   let ctx;
   let ball;
   let x;
@@ -32,8 +33,8 @@ function drawIt() {
   let drop = {
     x: 0,
     y: -20,
-    w: 20,
-    h: 20,
+    w: 30,
+    h: 30,
     speed: 3,
     active: false,
   };
@@ -44,13 +45,14 @@ function drawIt() {
   let hitBricks = 0;
   const cash = new Audio("assets/sound/kaching.mp3");
   const powerup = new Audio("assets/sound/powerup.mp3");
+  const imgDrop = new Image();
+  imgDrop.src = "assets/img/drop.png";
 
 
   function init() {
     if (intervalId) {
       clearInterval(intervalId); // <-- ustavi starega(ko sm refreshu je če ne žogica šla bl hitro)
     }
-    const playBtn = document.getElementById("playBtn");
     ctx = $('#canvas')[0].getContext("2d");
     WIDTH = $("#canvas").width();
     HEIGHT = $("#canvas").height();
@@ -87,14 +89,6 @@ function drawIt() {
       x - r, y - r,   // zgornji levi kot
       r * 2, r * 2    // širina, višina
     );
-  }
-
-  function circleDrop(x, y, r) {
-    ctx.beginPath();
-    ctx.fillStyle = "#0dff00";
-    ctx.arc(x, y, r, 0, Math.PI * 2, true);
-    ctx.closePath();
-    ctx.fill();
   }
 
   function clear() {
@@ -199,7 +193,7 @@ function drawIt() {
         start = true;
       } else if (ball.y - r > HEIGHT) {
         clearInterval(intervalId);
-        document.getElementById("playBtn").style.display = "block";
+        showGameOver(izpisTimer);
       }
 
     }
@@ -224,7 +218,7 @@ function drawIt() {
       }
     }
 
-    ctx.fillStyle = paddlecolor;
+    ctx.fillStyle = paddlew > paddleBaseW ? "#fec72f" : paddlecolor;
     rect(paddlex, HEIGHT - paddleh, paddlew, paddleh);
 
     if (paddlew > paddleBaseW) {
@@ -232,15 +226,16 @@ function drawIt() {
 
       if (remaining < 0) remaining = 0;
 
-      $("#powerupTimer").html("POWERUP: " + remaining + "s");
+      $("#powerupTimer").html("POWERUP: " + Math.ceil(remaining) + "s");
+      $("#powerupTimer").addClass("active");//da se pojavi
     } else {
-      $("#powerupTimer").html("");
+      $("#powerupTimer").removeClass("active");//da se odstrani
     }
 
     //premik in risanje elementa, ki poveča paddle
     if (drop.active) {
       drop.y += drop.speed;
-      circleDrop(drop.x, drop.y, drop.w / 2);
+      ctx.drawImage(imgDrop, drop.x, drop.y, drop.w, drop.h);
     }
 
     //ulov in povečanje paddle
@@ -282,7 +277,7 @@ function drawIt() {
       }
     }
   }
-  function startGame() {
+  window.startGame = function() {
     init();
     hitBricks = 0;
     drop.active = false;

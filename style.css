@@ -8,8 +8,6 @@ body {
     align-items: center;
     justify-content: center;
     overflow-x: hidden;
-    background-image:url(assets/img/bg.png);
-
 }
 
 #canvas {
@@ -30,51 +28,108 @@ body {
     justify-content: center;
 }
 
-#canvas{
-    background-size:cover;
+#canvas {
+    background-image: url(assets/img/bg_bw.png);
+    background-size: cover;
     background-repeat: no-repeat;
     background-position-y: -30px;
+}
+
+#top {
+    display: flex;
+    flex-direction: row;
+
 }
 
 #bannerDiv {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    width: 600px;
 }
 
 #banner {
     height: 100px;
 }
+
+#aboutBtn {
+    width: 150px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 10px;
+    border: 2px solid;
+    padding: 5px;
+    cursor: pointer;
+    background-image: url(assets/img/gold.jfif);
+    box-shadow: 0 0 8px 2px gold;
+}
+
 #powerupTimer {
-  font-size: 20px;
-  color: yellow;
-  font-weight: bold;
+    font-size: 20px;
+    color: black;
+    font-weight: bold;
+    background-image: url(assets/img/gold.jfif);
+    border: 2px solid;
+    border-radius: 10px;
+    width: 150px;
+    text-align: center;
+    visibility: hidden;
+    animation: blink 0.8s ease-in-out infinite;
+}
+
+#powerupTimer.active {
+    visibility: visible;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        box-shadow: 0 0 8px 2px gold;
+    }
+
+    50% {
+        box-shadow: 0 0 20px 8px gold;
+    }
 }
 
 #playBtn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  
-  font-size: 40px;
-  padding: 20px 50px;
-  border: none;
-  border-radius: 15px;
-  
-  background: gold;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    font-size: 40px;
+    padding: 20px 50px;
+    border: none;
+    border-radius: 15px;
 
-  animation: bounce 1s infinite;
+    background-image: url(assets/img/gold.jfif);
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+
+    animation: bounce 1s infinite;
 }
 
 /* animacija skakanja */
 @keyframes bounce {
-  0%   { transform: translate(-50%, -50%) translateY(0); }
-  50%  { transform: translate(-50%, -50%) translateY(-20px); }
-  100% { transform: translate(-50%, -50%) translateY(0); }
+    0% {
+        transform: translate(-50%, -50%) translateY(0);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) translateY(-20px);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) translateY(0);
+    }
+}
+
+.big-swal {
+    width: 700px !important;
+    height: 400px;
 }
