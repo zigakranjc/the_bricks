@@ -1,5 +1,5 @@
 function drawIt() {
-    const playBtn = document.getElementById("playBtn");
+  const playBtn = document.getElementById("playBtn");
   let ctx;
   let ball;
   let x;
@@ -47,6 +47,8 @@ function drawIt() {
   const powerup = new Audio("assets/sound/powerup.mp3");
   const imgDrop = new Image();
   imgDrop.src = "assets/img/drop.png";
+  const imgBg = new Image();
+  imgBg.src = "assets/img/bg.png";
 
 
   function init() {
@@ -169,15 +171,43 @@ function drawIt() {
           }
           if (hitBricks >= 40) {
             $("#imgLeva, #imgDesna").attr("src", "assets/img/money4.png").css("visibility", "visible");
+            $("#canvas").css({
+              "background-image": "url(assets/img/mercedes4.png)",
+              "background-position": "center"
+            });
           } else if (hitBricks >= 30) {
             $("#imgLeva, #imgDesna").attr("src", "assets/img/money3.png").css("visibility", "visible");
+            $("#canvas").css({
+              "background-image": "url(assets/img/mercedes3.png)",
+              "background-position": "center"
+            });
           } else if (hitBricks >= 20) {
             $("#imgLeva, #imgDesna").attr("src", "assets/img/money2.png").css("visibility", "visible");
+            $("#canvas").css({
+              "background-image": "url(assets/img/mercedes2.png)",
+              "background-position": "center"
+            });
           } else if (hitBricks >= 10) {
             $("#imgLeva, #imgDesna").attr("src", "assets/img/money1.png").css("visibility", "visible");
+            $("#canvas").css({
+              "background-image": "url(assets/img/mercedes1.png)",
+              "background-size": "cover",
+              "background-position": "center"
+            });
           }
         }
       }
+    }
+
+    //preveri če so vse opeke razbite
+    function checkWin() {
+      for (let i = 0; i < NROWS; i++) {
+        for (let j = 0; j < NCOLS; j++) {
+          if (bricks[i][j] == 1) return;
+        }
+      }
+      clearInterval(intervalId);
+      showWin(izpisTimer);
     }
 
     if (ball.x + ball.dx > WIDTH - r || ball.x + ball.dx < 0 + r)
@@ -276,20 +306,25 @@ function drawIt() {
         }
       }
     }
+    checkWin();
   }
-  window.startGame = function() {
+  window.startGame = function () {
     init();
     hitBricks = 0;
     drop.active = false;
     $("#imgLeva, #imgDesna").css("visibility", "hidden");
     playBtn.style.display = "none";
+    $("#canvas").css({
+      "background-image": "url(assets/img/old-car-bg.jpg)",
+      "background-size": "cover",
+      "background-position": "center"
+    });
+
+    // klik
+    playBtn.addEventListener("click", function () {
+      startGame();
+    });
   }
-
-  // klik
-  playBtn.addEventListener("click", function () {
-    startGame();
-  });
-
   // space tipka
   document.addEventListener("keydown", function (evt) {
     if (evt.keyCode === 32) { // 32 = SPACE
