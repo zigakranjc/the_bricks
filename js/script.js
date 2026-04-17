@@ -319,19 +319,19 @@ function drawIt() {
       "background-size": "cover",
       "background-position": "center"
     });
-
-    // klik
-    playBtn.addEventListener("click", function () {
-      startGame();
-    });
   }
-  // space tipka
-  document.addEventListener("keydown", function (evt) {
-    if (evt.keyCode === 32) { // 32 = SPACE
-      startGame();
-    }
+  // klik
+  playBtn.addEventListener("click", function () {
+    startGame();
   });
 }
+// space tipka
+document.addEventListener("keydown", function (evt) {
+  if (evt.keyCode === 32) { // 32 = SPACE
+    startGame();
+  }
+});
+
 
 
 
