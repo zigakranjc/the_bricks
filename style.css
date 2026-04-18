@@ -9,7 +9,8 @@ body {
     justify-content: center;
     overflow-x: hidden;
     background-repeat: no-repeat;
-    background-position-y: -55px;
+    background-size: cover;
+    background-position-x: 50%;
 }
 
 #canvas {
@@ -149,3 +150,9 @@ body {
     width: 700px !important;
     height: 400px;
 }
+
+#imgLeva{
+    align-self: flex-end;
+    margin-bottom: 2px;
+}
+

@@ -358,31 +358,10 @@ function drawIt() {
     }
     checkWin();
   }
-  /*window.startGame = function () {
-    hitBricks = 0;
-    powerupDrop.active = false;
-    $("#imgLeva, #imgDesna").css("visibility", "hidden");
-    playBtn.style.display = "none";
-    $("#canvas").css({
-      "background-image": "url(assets/img/old-car-bg.jpg)",
-      "background-size": "cover",
-      "background-position": "center"
-    });
-  }
-    // klik
-    playBtn.addEventListener("click", function () {
-      startGame();
-    });
-  
-  // space tipka
-  document.addEventListener("keydown", function (evt) {
-    if (evt.keyCode === 32) { // 32 = SPACE
-      startGame();
-    }
-  });*/
-    init();
 
+  init();
 }
+
 
 
 
