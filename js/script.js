@@ -2,35 +2,36 @@ function drawIt() {
   const playBtn = document.getElementById("playBtn");
   let ctx;
   let ball;
-  let x;
-  let y;
-  let dx = 2;
-  let dy = 4;
-  let r = 15;
-  let WIDTH;
-  let HEIGHT;
-  let paddlex;
-  let paddleh;
-  let paddlew;
-  let paddleBaseW;  //za spreminjanje paddle sirine nazaj na normalno po powerup
-  let paddleBoostUntil = 0; //za spreminjanje paddle sirine nazaj na normalno po powerup
-  let intervalId;
-  let rightDown = false;
-  let leftDown = false;
-  let bricks;
-  let NROWS;
-  let NCOLS;
-  let BRICKWIDTH;
-  let BRICKHEIGHT;
-  let PADDING;
-  let f = 0;
-  let paddlecolor = "#000000";
-  let start = true;
-  let sekunde = 0;
-  let izpisTimer = "00:00";
-  let sekundeI, minuteI;
+  const ballRadius = 15;
+  const initialBallDx = 2;
+  const initialBallDy = 4;
+  let canvasWidth;
+  let canvasHeight;
+  let paddleX;
+  let paddleHeight;
+  let paddleWidth;
+  let paddleBaseWidth; // za spreminjanje paddle sirine nazaj na normalno po powerup
+  let paddleBoostUntil = 0; // za spreminjanje paddle sirine nazaj na normalno po powerup
+  let gameLoopId;
+  let isRightPressed = false;
+  let isLeftPressed = false;
+  let brickGrid;
+  let brickRows;
+  let brickCols;
+  let brickWidth;
+  let brickHeight;
+  let brickPadding;
+  let spacingFactor = 0;
+  // some bricks need two hits
+  const TOUGH_BRICK_HITS = 2;
+  const TOUGH_BRICK_COUNT = 15;
+  let paddlecolor = "white";
+  let isTimerRunning = true;
+  let timerTicks = 0;
+  let timerText = "00:00";
+  let secondsText, minutesText;
   //element, ki poveča paddleinti
-  let drop = {
+  let powerupDrop = {
     x: 0,
     y: -20,
     w: 30,
@@ -38,10 +39,13 @@ function drawIt() {
     speed: 3,
     active: false,
   };
-  const imgMoney = new Image();
-  imgMoney.src = "assets/img/money.jpg";
-  const imgCoin = new Image();
-  imgCoin.src = "assets/img/coin.png";
+  
+  const imgBrick= new Image();
+  imgBrick.src = "assets/img/ice_brick.png";
+  const imgBrickBroken= new Image();
+  imgBrickBroken.src = "assets/img/ice_brick_broken.png";
+  const imgSnowBall = new Image();
+  imgSnowBall.src = "assets/img/snowball.png";
   let hitBricks = 0;
   const cash = new Audio("assets/sound/kaching.mp3");
   const powerup = new Audio("assets/sound/powerup.mp3");
@@ -50,51 +54,73 @@ function drawIt() {
   const imgBg = new Image();
   imgBg.src = "assets/img/bg.png";
 
+  function shuffleInPlace(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
 
   function init() {
-    if (intervalId) {
-      clearInterval(intervalId); // <-- ustavi starega(ko sm refreshu je če ne žogica šla bl hitro)
+    if (gameLoopId) {
+      clearInterval(gameLoopId); // <-- ustavi starega(ko sm refreshu je če ne žogica šla bl hitro)
     }
     ctx = $('#canvas')[0].getContext("2d");
-    WIDTH = $("#canvas").width();
-    HEIGHT = $("#canvas").height();
-    ball = { x: WIDTH / 2, y: HEIGHT / 2, dx: 2, dy: 4 };
-    sekunde = 0;
-    izpisTimer = "00:00";
+    canvasWidth = $("#canvas").width();
+    canvasHeight = $("#canvas").height();
+    ball = { x: canvasWidth / 2, y: canvasHeight / 2, dx: initialBallDx, dy: initialBallDy };
+    timerTicks = 0;
+    timerText = "00:00";
     init_paddle();
     initbricks();
     $(document).keydown(onKeyDown);
     $(document).keyup(onKeyUp);
-    intervalId = setInterval(draw, 10);
-    return intervalId;
+    gameLoopId = setInterval(draw, 10);
+    return gameLoopId;
   }
 
   function initbricks() { //inicializacija opek - polnjenje v tabelo
     let i, j;
-    NROWS = 5;
-    NCOLS = 9;
-    BRICKWIDTH = 74.4;
-    BRICKHEIGHT = 30;
-    PADDING = 3;
-    bricks = new Array(NROWS);
-    for (i = 0; i < NROWS; i++) {
-      bricks[i] = new Array(NCOLS);
-      for (j = 0; j < NCOLS; j++) {
-        bricks[i][j] = 1;
+    brickRows = 5;
+    brickCols = 13;
+    brickWidth = 50;
+    brickHeight = 40;
+    brickPadding = 3;
+
+    const positions = [];
+    for (i = 0; i < brickRows; i++) {
+      for (j = 0; j < brickCols; j++) {
+        positions.push([i, j]);
+      }
+    }
+    shuffleInPlace(positions);
+    const toughPositions = new Set(
+      positions.slice(0, TOUGH_BRICK_COUNT).map(([row, col]) => `${row},${col}`)
+    );
+
+    brickGrid = new Array(brickRows);
+    for (i = 0; i < brickRows; i++) {
+      brickGrid[i] = new Array(brickCols);
+      for (j = 0; j < brickCols; j++) {
+        const isTough = toughPositions.has(`${i},${j}`);
+        brickGrid[i][j] = {
+          hp: isTough ? TOUGH_BRICK_HITS : 1,
+          maxHp: isTough ? TOUGH_BRICK_HITS : 1,
+        };
       }
     }
   }
 
   function circle(x, y, r) {
     ctx.drawImage(
-      imgCoin,
+      imgSnowBall,
       x - r, y - r,   // zgornji levi kot
       r * 2, r * 2    // širina, višina
     );
   }
 
   function clear() {
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   }
 
   function rect(x, y, w, h) {
@@ -104,66 +130,90 @@ function drawIt() {
     ctx.fill();
   }
 
+  function drawBrick(x, y, brick) {
+    ctx.save();
+
+    const isTough = brick.maxHp >= TOUGH_BRICK_HITS;
+
+    // 2HP bricks: shadow (before first hit)
+    if (isTough && brick.hp >= TOUGH_BRICK_HITS) {
+      ctx.shadowColor = "rgba(0, 180, 255, 0.85)";
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+
+    const brickImage = (isTough && brick.hp === 1) ? imgBrickBroken : imgBrick;
+    ctx.drawImage(brickImage, x, y, brickWidth, brickHeight);
+    ctx.shadowBlur = 0;
+
+    
+    ctx.restore();
+  }
+
   function init_paddle() {
-    paddlex = WIDTH / 2;
-    paddleh = 10;
-    paddlew = 100;
-    paddleBaseW = paddlew;
+    paddleX = canvasWidth / 2;
+    paddleHeight = 10;
+    paddleWidth = 100;
+    paddleBaseWidth = paddleWidth;
   }
 
   function onKeyDown(evt) {
     if (evt.keyCode == 39)
-      rightDown = true;
+      isRightPressed = true;
     else if (evt.keyCode == 37)
-      leftDown = true;
+      isLeftPressed = true;
   }
 
   function onKeyUp(evt) {
     if (evt.keyCode == 39)
-      rightDown = false;
+      isRightPressed = false;
     else if (evt.keyCode == 37)
-      leftDown = false;
+      isLeftPressed = false;
   }
 
   function draw() {
     clear();
 
     //random spuščanje elementa, ki poveča paddle
-    if (!drop.active && Math.random() < 0.001) {
-      drop.active = true;
-      drop.x = Math.random() * (WIDTH - drop.w);
-      drop.y = -drop.h;
+    if (!powerupDrop.active && Math.random() < 0.001) {
+      powerupDrop.active = true;
+      powerupDrop.x = Math.random() * (canvasWidth - powerupDrop.w);
+      powerupDrop.y = -powerupDrop.h;
     }
 
-    if (start == true) {
-      sekunde++;
-      sekundeI = ((sekundeI = (sekunde % 60)) > 9) ? sekundeI : "0" + sekundeI;
-      minuteI = ((minuteI = Math.floor(sekunde / 60)) > 9) ? minuteI : "0" + minuteI;
-      izpisTimer = minuteI + ":" + sekundeI;
-      $("#cas").html(izpisTimer);
+    if (isTimerRunning == true) {
+      timerTicks++;
+      secondsText = ((secondsText = (timerTicks % 60)) > 9) ? secondsText : "0" + secondsText;
+      minutesText = ((minutesText = Math.floor(timerTicks / 60)) > 9) ? minutesText : "0" + minutesText;
+      timerText = minutesText + ":" + secondsText;
+      $("#cas").html(timerText);
     }
 
-    circle(ball.x, ball.y, r);
+    circle(ball.x, ball.y, ballRadius);
 
-    rowheight = BRICKHEIGHT + PADDING + f / 2;
-    colwidth = BRICKWIDTH + PADDING + f / 2;
+    let rowHeight = brickHeight + brickPadding + spacingFactor / 2;
+    let colWidth = brickWidth + brickPadding + spacingFactor / 2;
 
-    for (let bi = 0; bi < NROWS; bi++) {
-      for (let bj = 0; bj < NCOLS; bj++) {
-        if (bricks[bi][bj] !== 1) continue;
+    for (let bi = 0; bi < brickRows; bi++) {
+      for (let bj = 0; bj < brickCols; bj++) {
+        if (brickGrid[bi][bj].hp <= 0) continue;
 
-        const bx = bj * colwidth + PADDING;
-        const by = bi * rowheight + PADDING;
-        const nearX = Math.max(bx, Math.min(ball.x, bx + BRICKWIDTH));
-        const nearY = Math.max(by, Math.min(ball.y, by + BRICKHEIGHT));
+        const bx = bj * colWidth + brickPadding;
+        const by = bi * rowHeight + brickPadding;
+        const nearX = Math.max(bx, Math.min(ball.x, bx + brickWidth));
+        const nearY = Math.max(by, Math.min(ball.y, by + brickHeight));
         const dx = ball.x - nearX;
         const dy = ball.y - nearY;
 
-        if (dx * dx + dy * dy < r * r) {
-          bricks[bi][bj] = 0;
+        if (dx * dx + dy * dy < ballRadius * ballRadius) {
+          brickGrid[bi][bj].hp--;
           Math.abs(dx) < Math.abs(dy) ? ball.dy = -ball.dy : ball.dx = -ball.dx;
-          hitBricks++;
           new Audio("assets/sound/hit.mp3").play(); //če bi dal v const bi se slišalo samo enkrat ko bi jih več razbil.
+
+          if (brickGrid[bi][bj].hp === 0) {
+            hitBricks++;
+          }
 
           if (hitBricks == 10 || hitBricks == 20 || hitBricks == 30 || hitBricks == 40) {
             cash.currentTime = 0;
@@ -172,25 +222,25 @@ function drawIt() {
           if (hitBricks >= 40) {
             $("#imgLeva, #imgDesna").attr("src", "assets/img/money4.png").css("visibility", "visible");
             $("#canvas").css({
-              "background-image": "url(assets/img/mercedes4.png)",
+              "background-image": "url()",
               "background-position": "center"
             });
           } else if (hitBricks >= 30) {
             $("#imgLeva, #imgDesna").attr("src", "assets/img/money3.png").css("visibility", "visible");
             $("#canvas").css({
-              "background-image": "url(assets/img/mercedes3.png)",
+              "background-image": "url()",
               "background-position": "center"
             });
           } else if (hitBricks >= 20) {
             $("#imgLeva, #imgDesna").attr("src", "assets/img/money2.png").css("visibility", "visible");
             $("#canvas").css({
-              "background-image": "url(assets/img/mercedes2.png)",
+              "background-image": "url()",
               "background-position": "center"
             });
           } else if (hitBricks >= 10) {
             $("#imgLeva, #imgDesna").attr("src", "assets/img/money1.png").css("visibility", "visible");
             $("#canvas").css({
-              "background-image": "url(assets/img/mercedes1.png)",
+              "background-image": "url()",
               "background-size": "cover",
               "background-position": "center"
             });
@@ -201,29 +251,29 @@ function drawIt() {
 
     //preveri če so vse opeke razbite
     function checkWin() {
-      for (let i = 0; i < NROWS; i++) {
-        for (let j = 0; j < NCOLS; j++) {
-          if (bricks[i][j] == 1) return;
+      for (let i = 0; i < brickRows; i++) {
+        for (let j = 0; j < brickCols; j++) {
+          if (brickGrid[i][j].hp > 0) return;
         }
       }
-      clearInterval(intervalId);
-      showWin(izpisTimer);
+      clearInterval(gameLoopId);
+      showWin(timerText);
     }
 
-    if (ball.x + ball.dx > WIDTH - r || ball.x + ball.dx < 0 + r)
+    if (ball.x + ball.dx > canvasWidth - ballRadius || ball.x + ball.dx < 0 + ballRadius)
       ball.dx = -ball.dx;
 
-    if (ball.y + ball.dy < 0 + r)
+    if (ball.y + ball.dy < 0 + ballRadius)
       ball.dy = -ball.dy;
-    else if (ball.y + ball.dy + r >= HEIGHT - paddleh) {
-      start = false;
-      if (ball.x + r >= paddlex && ball.x - r <= paddlex + paddlew) {
-        ball.dx = 8 * ((ball.x - (paddlex + paddlew / 2)) / paddlew);
+    else if (ball.y + ball.dy + ballRadius >= canvasHeight - paddleHeight) {
+      isTimerRunning = false;
+      if (ball.x + ballRadius >= paddleX && ball.x - ballRadius <= paddleX + paddleWidth) {
+        ball.dx = 8 * ((ball.x - (paddleX + paddleWidth / 2)) / paddleWidth);
         ball.dy = -ball.dy;
-        start = true;
-      } else if (ball.y - r > HEIGHT) {
-        clearInterval(intervalId);
-        showGameOver(izpisTimer);
+        isTimerRunning = true;
+      } else if (ball.y - ballRadius > canvasHeight) {
+        clearInterval(gameLoopId);
+        showGameOver(timerText);
       }
 
     }
@@ -233,25 +283,25 @@ function drawIt() {
 
 
     //premik ploščice levo in desno
-    if (rightDown) {
-      if ((paddlex + paddlew) < WIDTH) {
-        paddlex += 5;
+    if (isRightPressed) {
+      if ((paddleX + paddleWidth) < canvasWidth) {
+        paddleX += 5;
       } else {
-        paddlex = WIDTH - paddlew;
+        paddleX = canvasWidth - paddleWidth;
       }
     }
-    else if (leftDown) {
-      if (paddlex > 0) {
-        paddlex -= 5;
+    else if (isLeftPressed) {
+      if (paddleX > 0) {
+        paddleX -= 5;
       } else {
-        paddlex = 0;
+        paddleX = 0;
       }
     }
 
-    ctx.fillStyle = paddlew > paddleBaseW ? "#fec72f" : paddlecolor;
-    rect(paddlex, HEIGHT - paddleh, paddlew, paddleh);
+    ctx.fillStyle = paddleWidth > paddleBaseWidth ? "#fec72f" : paddlecolor;
+    rect(paddleX, canvasHeight - paddleHeight, paddleWidth, paddleHeight);
 
-    if (paddlew > paddleBaseW) {
+    if (paddleWidth > paddleBaseWidth) {
       let remaining = Math.max(0, paddleBoostUntil - Date.now()) / 1000;
 
       if (remaining < 0) remaining = 0;
@@ -263,18 +313,18 @@ function drawIt() {
     }
 
     //premik in risanje elementa, ki poveča paddle
-    if (drop.active) {
-      drop.y += drop.speed;
-      ctx.drawImage(imgDrop, drop.x, drop.y, drop.w, drop.h);
+    if (powerupDrop.active) {
+      powerupDrop.y += powerupDrop.speed;
+      ctx.drawImage(imgDrop, powerupDrop.x, powerupDrop.y, powerupDrop.w, powerupDrop.h);
     }
 
     //ulov in povečanje paddle
-    if (drop.active &&
-      drop.y + drop.h >= HEIGHT - paddleh &&
-      drop.x + drop.w >= paddlex &&
-      drop.x <= paddlex + paddlew) {
-      drop.active = false;
-      paddlew = paddleBaseW + 50;
+    if (powerupDrop.active &&
+      powerupDrop.y + powerupDrop.h >= canvasHeight - paddleHeight &&
+      powerupDrop.x + powerupDrop.w >= paddleX &&
+      powerupDrop.x <= paddleX + paddleWidth) {
+      powerupDrop.active = false;
+      paddleWidth = paddleBaseWidth + 50;
       if (paddleBoostUntil > Date.now()) {
         paddleBoostUntil += 7000;
       } else {
@@ -285,33 +335,32 @@ function drawIt() {
       powerup.play();
     }
 
-    if (paddlew > paddleBaseW && Date.now() >= paddleBoostUntil) {
-      paddlew = paddleBaseW;
+    if (paddleWidth > paddleBaseWidth && Date.now() >= paddleBoostUntil) {
+      paddleWidth = paddleBaseWidth;
     }
 
     //če element za povečavo paddle pade mimo
-    if (drop.active && drop.y > HEIGHT) {
-      drop.active = false;
+    if (powerupDrop.active && powerupDrop.y > canvasHeight) {
+      powerupDrop.active = false;
     }
 
-    for (let i = 0; i < NROWS; i++) {
-      for (let j = 0; j < NCOLS; j++) {
-        if (bricks[i][j] == 1) {
-          ctx.drawImage(
-            imgMoney,
-            (j * (BRICKWIDTH + PADDING)) + PADDING,
-            (i * (BRICKHEIGHT + PADDING)) + PADDING,
-            BRICKWIDTH, BRICKHEIGHT
+    for (let i = 0; i < brickRows; i++) {
+      for (let j = 0; j < brickCols; j++) {
+        const brick = brickGrid[i][j];
+        if (brick.hp > 0) {
+          drawBrick(
+            (j * (brickWidth + brickPadding)) + brickPadding,
+            (i * (brickHeight + brickPadding)) + brickPadding,
+            brick
           );
         }
       }
     }
     checkWin();
   }
-  window.startGame = function () {
-    init();
+  /*window.startGame = function () {
     hitBricks = 0;
-    drop.active = false;
+    powerupDrop.active = false;
     $("#imgLeva, #imgDesna").css("visibility", "hidden");
     playBtn.style.display = "none";
     $("#canvas").css({
@@ -319,20 +368,21 @@ function drawIt() {
       "background-size": "cover",
       "background-position": "center"
     });
-
+  }
     // klik
     playBtn.addEventListener("click", function () {
       startGame();
     });
-  }
+  
   // space tipka
   document.addEventListener("keydown", function (evt) {
     if (evt.keyCode === 32) { // 32 = SPACE
       startGame();
     }
-  });
-}
+  });*/
+    init();
 
+}
 
 
 

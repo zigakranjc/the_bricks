@@ -8,7 +8,6 @@ body {
     align-items: center;
     justify-content: center;
     overflow-x: hidden;
-    background-image: url(assets/img/body-bg.jpg);
     background-repeat: no-repeat;
     background-position-y: -55px;
 }
@@ -32,7 +31,7 @@ body {
 }
 
 #canvas {
-    background-image: url(assets/img/bg.png);
+    background-color: black;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
