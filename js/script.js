@@ -5,6 +5,7 @@ function drawIt() {
   const ballRadius = 15;
   const initialBallDx = 2;
   const initialBallDy = 4;
+  const BEST_TIME_KEY = "bestWinTimeSeconds";
   let canvasWidth;
   let canvasHeight;
   let paddleX;
@@ -33,8 +34,8 @@ function drawIt() {
   //element, ki poveča paddleinti
   let powerupDrop = {
     x: 0,
-    y: -20,
-    w: 30,
+    y: 0,
+    w: 40,
     h: 30,
     speed: 3,
     active: false,
@@ -50,9 +51,51 @@ function drawIt() {
   const cash = new Audio("assets/sound/kaching.mp3");
   const powerup = new Audio("assets/sound/powerup.mp3");
   const imgDrop = new Image();
-  imgDrop.src = "assets/img/drop.png";
+  imgDrop.src = "assets/img/snowflake_drop.png";
   const imgBg = new Image();
   imgBg.src = "assets/img/bg.png";
+
+  function parseTimeToSeconds(timeText) {
+    // expects "MM:SS"
+    const [mm, ss] = String(timeText).split(":");
+    const minutes = Number(mm);
+    const seconds = Number(ss);
+    if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
+    return minutes * 60 + seconds;
+  }
+
+  function formatSeconds(totalSeconds) {
+    const safe = Math.max(0, Math.floor(totalSeconds));
+    const minutes = Math.floor(safe / 60);
+    const seconds = safe % 60;
+    const mm = String(minutes).padStart(2, "0");
+    const ss = String(seconds).padStart(2, "0");
+    return `${mm}:${ss}`;
+  }
+
+  function getBestWinTimeSeconds() {
+    try {
+      const raw = localStorage.getItem(BEST_TIME_KEY);
+      if (raw == null) return null;
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function setBestWinTimeSeconds(seconds) {
+    try {
+      localStorage.setItem(BEST_TIME_KEY, String(seconds));
+    } catch {
+      // ignore (private mode / blocked storage)
+    }
+  }
+
+  function updateBestTimeUI() {
+    const best = getBestWinTimeSeconds();
+    $("#bestTime").html(best == null ? "BEST: --:--" : `BEST: ${formatSeconds(best)}`);
+  }
 
   function shuffleInPlace(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -71,6 +114,7 @@ function drawIt() {
     ball = { x: canvasWidth / 2, y: canvasHeight / 2, dx: initialBallDx, dy: initialBallDy };
     timerTicks = 0;
     timerText = "00:00";
+    updateBestTimeUI();
     init_paddle();
     initbricks();
     $(document).keydown(onKeyDown);
@@ -187,7 +231,7 @@ function drawIt() {
       secondsText = ((secondsText = (timerTicks % 60)) > 9) ? secondsText : "0" + secondsText;
       minutesText = ((minutesText = Math.floor(timerTicks / 60)) > 9) ? minutesText : "0" + minutesText;
       timerText = minutesText + ":" + secondsText;
-      $("#cas").html(timerText);
+      $("#time").html(timerText);
     }
 
     circle(ball.x, ball.y, ballRadius);
@@ -220,25 +264,25 @@ function drawIt() {
             cash.play();
           }
           if (hitBricks >= 40) {
-            $("#imgLeva, #imgDesna").attr("src", "assets/img/money4.png").css("visibility", "visible");
+            $("#imgDesna").attr("src", "assets/img/money4.png").css("visibility", "visible");
             $("#canvas").css({
               "background-image": "url()",
               "background-position": "center"
             });
           } else if (hitBricks >= 30) {
-            $("#imgLeva, #imgDesna").attr("src", "assets/img/money3.png").css("visibility", "visible");
+            $("#imgDesna").attr("src", "assets/img/money3.png").css("visibility", "visible");
             $("#canvas").css({
               "background-image": "url()",
               "background-position": "center"
             });
           } else if (hitBricks >= 20) {
-            $("#imgLeva, #imgDesna").attr("src", "assets/img/money2.png").css("visibility", "visible");
+            $("#imgDesna").attr("src", "assets/img/money2.png").css("visibility", "visible");
             $("#canvas").css({
               "background-image": "url()",
               "background-position": "center"
             });
           } else if (hitBricks >= 10) {
-            $("#imgLeva, #imgDesna").attr("src", "assets/img/money1.png").css("visibility", "visible");
+            $("#imgDesna").attr("src", "assets/img/money1.png").css("visibility", "visible");
             $("#canvas").css({
               "background-image": "url()",
               "background-size": "cover",
@@ -257,6 +301,16 @@ function drawIt() {
         }
       }
       clearInterval(gameLoopId);
+
+      const current = parseTimeToSeconds(timerText);
+      if (current != null) {
+        const best = getBestWinTimeSeconds();
+        if (best == null || current < best) {
+          setBestWinTimeSeconds(current);
+        }
+      }
+      updateBestTimeUI();
+
       showWin(timerText);
     }
 

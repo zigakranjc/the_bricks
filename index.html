@@ -7,17 +7,21 @@
 <body onload="drawIt()">
     <div id="game">
         <div id="bannerDiv">
-            <button id="aboutBtn">About</button>
             <img src="assets/img/banner.png" alt="banner" id="banner">
             <div id="powerupTimer">POWERUP</div>
         </div>
         <div id="canvasDiv">
             <!--<button id="playBtn">Play</button>-->
-            <img id="imgLeva" src="" height="500" style="visibility:hidden;">
-            <canvas id="canvas" width="700" height="550"></canvas>
-            <img id="imgDesna" src="" height="500" style="visibility:hidden;">
+            <div id="stage">
+                <div id="leftPanel">
+                    <button id="aboutBtn">About</button>
+                    <div id="time">00:00</div>
+                    <div id="bestTime">BEST: --:--</div>
+                </div>
+                <canvas id="canvas" width="700" height="550"></canvas>
+                <img id="imgDesna" src="" height="500" style="visibility:hidden;">
+            </div>
         </div>
-        <div id="cas">00:00</div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/sweetAlert.js"></script>

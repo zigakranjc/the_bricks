@@ -11,17 +11,24 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     background-position-x: 50%;
+    font-family: Arial, sans-serif;
 }
 
 #canvas {
     border: 2px solid;
-    background-color: aliceblue;
+    background-color: black;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: block;
+    margin: 0 auto;
 }
 
 #game {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 10px;
 }
 
 #canvasDiv {
@@ -31,11 +38,18 @@ body {
     justify-content: center;
 }
 
-#canvas {
-    background-color: black;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
+#stage {
+    position: relative;
+    width: 700px;
+    height: 550px;
+    display: block;
+}
+
+#imgDesna {
+    position: absolute;
+    left: calc(100% + 14px);
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 #top {
@@ -47,38 +61,81 @@ body {
 #bannerDiv {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 600px;
+    justify-content: center;
+    width: 700px;
+    position: relative;
 }
 
 #banner {
     height: 100px;
 }
 
-#aboutBtn {
-    width: 150px;
-    font-size: 20px;
-    font-weight: bold;
-    border-radius: 10px;
-    border: 2px solid;
-    padding: 5px;
-    cursor: pointer;
-    background-image: url(assets/img/gold.jfif);
-    box-shadow: 0 0 8px 2px gold;
+#leftPanel {
+    width: 200px;
+    padding: 30px;
+    border-radius: 16px;
+    border: 2px solid rgba(255, 215, 0, 0.55);
+    background: linear-gradient(180deg, rgba(20, 20, 20, 0.9), rgba(5, 5, 5, 0.9));
+    box-shadow: 0 0 18px rgba(255, 215, 0, 0.22), 0 0 40px rgba(0, 0, 0, 0.55);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    position: absolute;
+    top: 50%;
+    left: -300px;
+    transform: translateY(-50%);
 }
 
-#cas {
+#aboutBtn {
+    width: 218px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 10px;
+    border: 2px solid;
+    padding: 10px 8px;
+    cursor: pointer;
+    background-color: rgba(131, 218, 255, 0.85);
+    box-shadow: 0 0 8px 2px rgba(0, 180, 255, 0.85);
+    transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+#aboutBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 14px 4px rgba(0, 180, 255, 0.95);
+    filter: brightness(1.05);
+}
+
+#aboutBtn:active {
+    transform: translateY(0px);
+}
+
+#time {
     text-align: center;
-    width: 100px;
-    margin-top: 10px;
+    height: 20px;
+    width: 100%;
+    margin-top: 0;
     font-size: 20px;
     font-weight: bold;
     border-radius: 10px;
     border: 2px solid;
-    padding: 5px;
-    cursor: pointer;
-    background-image: url(assets/img/gold.jfif);
-    box-shadow: 0 0 8px 2px gold;
+    padding: 10px 8px;
+    background-color: rgba(131, 218, 255, 0.85);
+    box-shadow: 0 0 8px 2px rgba(0, 180, 255, 0.85);
+}
+
+#bestTime {
+    text-align: center;
+    width: 100%;
+    margin-top: 0;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 10px;
+    border: 2px solid;
+    padding: 10px 8px;
+    background-color: rgba(131, 218, 255, 0.85);
+    box-shadow: 0 0 8px 2px rgba(0, 180, 255, 0.85);
 }
 
 #powerupTimer {
@@ -92,6 +149,8 @@ body {
     text-align: center;
     visibility: hidden;
     animation: blink 0.8s ease-in-out infinite;
+    position: absolute;
+    right: 0;
 }
 
 #powerupTimer.active {
@@ -151,8 +210,7 @@ body {
     height: 400px;
 }
 
-#imgLeva{
+#imgLeva {
     align-self: flex-end;
     margin-bottom: 2px;
 }
-
