@@ -6,6 +6,7 @@ function drawIt() {
   const initialBallDx = 2;
   const initialBallDy = 4;
   const BEST_TIME_KEY = "bestWinTimeSeconds";
+  let hasStarted = false;
   let canvasWidth;
   let canvasHeight;
   let paddleX;
@@ -54,6 +55,11 @@ function drawIt() {
   imgDrop.src = "assets/img/snowflake_drop.png";
   const imgBg = new Image();
   imgBg.src = "assets/img/bg.png";
+
+  function setPlayButtonVisible(visible) {
+    if (!playBtn) return;
+    playBtn.style.display = visible ? "" : "none";
+  }
 
   function parseTimeToSeconds(timeText) {
     // expects "MM:SS"
@@ -114,11 +120,20 @@ function drawIt() {
     ball = { x: canvasWidth / 2, y: canvasHeight / 2, dx: initialBallDx, dy: initialBallDy };
     timerTicks = 0;
     timerText = "00:00";
+    isTimerRunning = true;
+    hitBricks = 0;
+    powerupDrop.active = false;
+    paddleBoostUntil = 0;
+    $("#imgDesna").attr("src", "").css("visibility", "hidden");
+    $("#time").html(timerText);
     updateBestTimeUI();
     init_paddle();
     initbricks();
-    $(document).keydown(onKeyDown);
-    $(document).keyup(onKeyUp);
+    $(document)
+      .off("keydown.bricks", onKeyDown)
+      .off("keyup.bricks", onKeyUp)
+      .on("keydown.bricks", onKeyDown)
+      .on("keyup.bricks", onKeyUp);
     gameLoopId = setInterval(draw, 10);
     return gameLoopId;
   }
@@ -413,12 +428,30 @@ function drawIt() {
     checkWin();
   }
 
-  init();
+  let onStartKeyDown = null;
+
+  function startGame() {
+    if (hasStarted) return;
+    hasStarted = true;
+    setPlayButtonVisible(false);
+    init();
+    if (onStartKeyDown) document.removeEventListener("keydown", onStartKeyDown);
+  }
+
+  if (playBtn) {
+    setPlayButtonVisible(true);
+    playBtn.addEventListener("click", startGame, { once: true });
+
+    onStartKeyDown = (evt) => {
+      if (hasStarted) return;
+      if (evt.key === "Enter" || evt.key === " ") {
+        evt.preventDefault();
+        startGame();
+      }
+    };
+    document.addEventListener("keydown", onStartKeyDown);
+  } else {
+    // fallback: if the button is missing, keep old behavior
+    init();
+  }
 }
-
-
-
-
-
-
-

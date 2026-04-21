@@ -109,6 +109,7 @@ body {
         0 0 6px rgba(120, 220, 255, 0.55),
         0 0 14px rgba(0, 180, 255, 0.35);
     background-image: url(assets/img/l_pannel_element_bg.png);
+    padding-bottom: 10px;
     background-repeat: no-repeat;
     background-size: 100% 100%;
     background-position: center;
@@ -209,20 +210,22 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-
-    font-size: 40px;
-    padding: 20px 50px;
+    width: 260px;
+    height: 120px;
+    padding: 0;
     border: none;
     border-radius: 15px;
-
-    background-image: url(assets/img/gold.jfif);
-    color: black;
-    font-weight: bold;
+    appearance: none;
+    -webkit-appearance: none;
+    background: url(assets/img/playBtn.png) center / contain no-repeat;
+    background-color: transparent;
     cursor: pointer;
-
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-
     animation: bounce 1s infinite;
+}
+
+#playBtn:focus-visible {
+    outline: 3px solid gold;
+    outline-offset: 6px;
 }
 
 /* animacija skakanja */
