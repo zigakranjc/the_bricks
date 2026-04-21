@@ -3,11 +3,19 @@
     padding: 0;
 }
 
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
 body {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow-x: hidden;
+    overflow: hidden;
+    min-height: 100vh;
+    background-image: url(assets/img/bg1.jpg);
     background-repeat: no-repeat;
     background-size: cover;
     background-position-x: 50%;
@@ -16,10 +24,7 @@ body {
 
 #canvas {
     border: 2px solid;
-    background-color: black;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
+    background-color: rgba(0, 0, 0, 0.362);
     display: block;
     margin: 0 auto;
 }
@@ -71,12 +76,13 @@ body {
 }
 
 #leftPanel {
-    width: 200px;
+    height: 40vh;
+    width: 15vw;
     padding: 30px;
     border-radius: 16px;
-    border: 2px solid rgba(255, 215, 0, 0.55);
-    background: linear-gradient(180deg, rgba(20, 20, 20, 0.9), rgba(5, 5, 5, 0.9));
-    box-shadow: 0 0 18px rgba(255, 215, 0, 0.22), 0 0 40px rgba(0, 0, 0, 0.55);
+    background-image: url(assets/img/l_pannel_bg.png);
+    background-repeat: no-repeat;
+    background-size: cover;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -89,21 +95,31 @@ body {
 }
 
 #aboutBtn {
-    width: 218px;
-    font-size: 18px;
+    width: 15vw;
+    height: 9vh;
+    font-size: 20px;
     font-weight: bold;
     border-radius: 10px;
-    border: 2px solid;
-    padding: 10px 8px;
     cursor: pointer;
-    background-color: rgba(131, 218, 255, 0.85);
-    box-shadow: 0 0 8px 2px rgba(0, 180, 255, 0.85);
-    transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+    text-align: center;
+    letter-spacing: 0.5px;
+    color: #00000065;
+    text-shadow: 0 1px 0 rgba(0, 40, 70, 0.65),
+        0 -1px 0 rgba(255, 255, 255, 0.65),
+        0 0 6px rgba(120, 220, 255, 0.55),
+        0 0 14px rgba(0, 180, 255, 0.35);
+    background-image: url(assets/img/l_pannel_element_bg.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    background-color: transparent;
+    appearance: none;
+    border: none;
+    box-shadow: none;   
 }
 
 #aboutBtn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0 14px 4px rgba(0, 180, 255, 0.95);
+    transform: translateY(-2px);
     filter: brightness(1.05);
 }
 
@@ -113,29 +129,48 @@ body {
 
 #time {
     text-align: center;
-    height: 20px;
-    width: 100%;
+    height: 9vh;
+    width: 15vw;
+    min-height: 0;
     margin-top: 0;
     font-size: 20px;
     font-weight: bold;
     border-radius: 10px;
-    border: 2px solid;
-    padding: 10px 8px;
-    background-color: rgba(131, 218, 255, 0.85);
-    box-shadow: 0 0 8px 2px rgba(0, 180, 255, 0.85);
+    padding: 0 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+    color: #03056076;
+    line-height: 8vh;
+    background-image: url(assets/img/l_pannel_element_bg.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 #bestTime {
     text-align: center;
-    width: 100%;
+    width: 15vw;
+    height: 9vh;
+    min-height: 0;
     margin-top: 0;
     font-size: 16px;
     font-weight: bold;
     border-radius: 10px;
-    border: 2px solid;
-    padding: 10px 8px;
-    background-color: rgba(131, 218, 255, 0.85);
-    box-shadow: 0 0 8px 2px rgba(0, 180, 255, 0.85);
+    padding: 0 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+    color: #03056076;
+    line-height: 8vh;
+    background-image: url(assets/img/l_pannel_element_bg.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 #powerupTimer {

@@ -181,7 +181,7 @@ function drawIt() {
 
     // 2HP bricks: shadow (before first hit)
     if (isTough && brick.hp >= TOUGH_BRICK_HITS) {
-      ctx.shadowColor = "rgba(0, 180, 255, 0.85)";
+      ctx.shadowColor = "white";
       ctx.shadowBlur = 14;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;

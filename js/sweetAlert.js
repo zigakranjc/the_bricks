@@ -4,7 +4,7 @@ function showGameOver(time) {
         html: `<div style="margin: 200px 0s"; font-family: Arial, sans-serif;>Time played: <b>${time}</b></div>`,
         confirmButtonText: "TRY AGAIN",
         confirmButtonColor: "gold",
-        background: "url(assets/img/sweet-alert-bg.png) center / contain  no-repeat",
+        background: "url(assets/img/sa_bg.png) center / contain  no-repeat",
         customClass: {
             popup: "bigger-swal",
         },
