@@ -83,7 +83,7 @@ body {
     gap: 12px;
     position: absolute;
     top: 50%;
-    left: -300px;
+    left: -25vw;
     transform: translateY(-50%);
 }
 
