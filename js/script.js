@@ -503,7 +503,7 @@ function drawIt() {
       }
     }
 
-    ctx.fillStyle = paddleWidth > paddleBaseWidth ? "#fec72f" : paddlecolor;
+    ctx.fillStyle = paddleWidth > paddleBaseWidth ? "#0084ff" : paddlecolor;
     rect(paddleX, canvasHeight - paddleHeight, paddleWidth, paddleHeight);
 
     if (paddleWidth > paddleBaseWidth) {

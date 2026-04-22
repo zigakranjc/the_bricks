@@ -2,18 +2,17 @@ function showGameOver(time) {
     Swal.fire({
         title: `<div style="margin-top: 12vh; font-family: Arial, sans-serif;">GAME OVER!</div>`,
         html: `<div style= font-family: Arial, sans-serif;>Time played: <b>${time}</b> s</div>`,
-        confirmButtonText: "TRY AGAIN",
+        confirmButtonText: "",
         confirmButtonColor: "transparent",
         showDenyButton: true,
-        denyButtonText: "QUIT",
-        denyButtonColor: "gold",
+        denyButtonText: "",
         background: "url(assets/img/sa_bg.png) center / contain  no-repeat",
         customClass: {
             popup: "bigger-swal",
             confirmButton: "sa-btn-image",
-            denyButton: "sa-btn-quit",
+            denyButton: "sa-btnQuit-image",
         },
-        color: "white"
+        color: "#03056076",
     }).then(function (result) {
         if (result.isConfirmed) {
             window.location.reload();
@@ -33,7 +32,7 @@ function showGameOver(time) {
 window.askPlayerName = function askPlayerName() {
     if (window.Swal && typeof window.Swal.fire === "function") {
         return window.Swal.fire({
-            title: "Your name",
+            title: `<div style="margin-top: 12vh; font-family: Arial, sans-serif; color: #03056076;">YOUR NAME</div>`,
             input: "text",
             inputPlaceholder: "Enter name",
             inputAttributes: { autocapitalize: "off", autocomplete: "nickname" },
@@ -42,12 +41,17 @@ window.askPlayerName = function askPlayerName() {
             allowOutsideClick: false,
             allowEscapeKey: false,
             background: "url(assets/img/sa_bg.png) center / contain  no-repeat",
-            customClass: { popup: "bigger-swal" },
+            customClass: { popup: "bigger-swal", input: "sa-name-input", validationMessage: "sa-validation-msg" },
             color: "white",
             inputValidator: (value) => {
                 const safe = String(value ?? "").trim();
                 return safe ? undefined : "Please enter a name";
             },
+            customClass: {
+                input: "sa-name-input",
+                confirmButton: "sa-btnAbout-image",
+            },
+            confirmButtonText: "",
         }).then((res) => String(res.value ?? "").trim());
     }
 
@@ -61,10 +65,11 @@ aboutBtn.addEventListener("click", function () {
         window.Swal.fire({
             html: `<div style="padding-top: 15vh; font-size: 30px; font-weight: bold; font-family: Arial, sans-serif;">Žiga Kranjc <br>4. Rb</div>`,
             background: "url(assets/img/sa_bg.png) center / contain  no-repeat",
+            color: "#03056076",
             customClass: {
                 popup: "bigger-swal",
                 confirmButton: "sa-btnAbout-image",
-            }, 
+            },
             confirmButtonText: "",
         }).then(function () {
             window.location.reload();
@@ -80,14 +85,13 @@ function showWin(time) {
         confirmButtonColor: "transparent",
         showDenyButton: true,
         denyButtonText: "QUIT",
-        denyButtonColor: "gold",
         background: "url(assets/img/sa_bg.png) center / contain no-repeat",
         customClass: {
             popup: "bigger-swal",
             confirmButton: "sa-btn-image",
-            denyButton: "sa-btn-quit",
+            denyButton: "sa-btnQuit-image",
         },
-        color: "white"
+        color: "#03056076",
     }).then(function (result) {
         if (result.isConfirmed) {
             window.location.reload();
