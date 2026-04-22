@@ -6,6 +6,10 @@ function drawIt() {
   const initialBallDx = 2;
   const initialBallDy = 4;
   const BEST_TIME_KEY = "bestWinTimeSeconds";
+  const BEST_NAME_KEY = "bestWinName";
+  const PLAYER_NAME_KEY = "playerName";
+  const LEADERBOARD_KEY = "leaderboardV1";
+  const LEADERBOARD_LIMIT = 5;
   let hasStarted = false;
   let canvasWidth;
   let canvasHeight;
@@ -32,6 +36,7 @@ function drawIt() {
   let timerTicks = 0;
   let timerText = "00:00";
   let secondsText, minutesText;
+  let bricksDestroyed = 0;
   //element, ki poveča paddleinti
   let powerupDrop = {
     x: 0,
@@ -41,15 +46,13 @@ function drawIt() {
     speed: 3,
     active: false,
   };
-  
-  const imgBrick= new Image();
+
+  const imgBrick = new Image();
   imgBrick.src = "assets/img/ice_brick.png";
-  const imgBrickBroken= new Image();
+  const imgBrickBroken = new Image();
   imgBrickBroken.src = "assets/img/ice_brick_broken.png";
   const imgSnowBall = new Image();
   imgSnowBall.src = "assets/img/snowball.png";
-  let hitBricks = 0;
-  const cash = new Audio("assets/sound/kaching.mp3");
   const powerup = new Audio("assets/sound/powerup.mp3");
   const imgDrop = new Image();
   imgDrop.src = "assets/img/snowflake_drop.png";
@@ -79,12 +82,66 @@ function drawIt() {
     return `${mm}:${ss}`;
   }
 
+  function getLeaderboard() {
+    try {
+      const raw = localStorage.getItem(LEADERBOARD_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      const cleaned = parsed
+        .map((entry) => ({
+          name: String(entry?.name ?? "").trim(),
+          seconds: Number(entry?.seconds),
+          date: String(entry?.date ?? ""),
+        }))
+        .filter((entry) => entry.name && Number.isFinite(entry.seconds) && entry.seconds >= 0);
+      cleaned.sort((a, b) => a.seconds - b.seconds);
+      return cleaned.slice(0, LEADERBOARD_LIMIT);
+    } catch {
+      return [];
+    }
+  }
+
+  function setLeaderboard(entries) {
+    try {
+      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries));
+    } catch {
+      // ignore (private mode / blocked storage)
+    }
+  }
+
+  function addLeaderboardEntry(seconds, name) {
+    const safeName = String(name ?? "").trim() || "Player";
+    const safeSeconds = Number(seconds);
+    if (!Number.isFinite(safeSeconds) || safeSeconds < 0) return getLeaderboard();
+
+    const next = [
+      ...getLeaderboard(),
+      { name: safeName, seconds: Math.floor(safeSeconds), date: new Date().toISOString() },
+    ];
+    next.sort((a, b) => a.seconds - b.seconds);
+    const trimmed = next.slice(0, LEADERBOARD_LIMIT);
+    setLeaderboard(trimmed);
+    return trimmed;
+  }
+
   function getBestWinTimeSeconds() {
     try {
       const raw = localStorage.getItem(BEST_TIME_KEY);
       if (raw == null) return null;
       const n = Number(raw);
       return Number.isFinite(n) ? n : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function getBestWinName() {
+    try {
+      const raw = localStorage.getItem(BEST_NAME_KEY);
+      if (raw == null) return null;
+      const name = String(raw).trim();
+      return name ? name : null;
     } catch {
       return null;
     }
@@ -98,9 +155,112 @@ function drawIt() {
     }
   }
 
+  function setBestWinName(name) {
+    try {
+      const safe = String(name ?? "").trim();
+      if (!safe) return;
+      localStorage.setItem(BEST_NAME_KEY, safe);
+    } catch {
+      // ignore (private mode / blocked storage)
+    }
+  }
+
+  function getPlayerName() {
+    try {
+      const raw = localStorage.getItem(PLAYER_NAME_KEY);
+      if (raw == null) return null;
+      const name = String(raw).trim();
+      return name ? name : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function setPlayerName(name) {
+    try {
+      const safe = String(name ?? "").trim();
+      if (!safe) return;
+      localStorage.setItem(PLAYER_NAME_KEY, safe);
+    } catch {
+      // ignore (private mode / blocked storage)
+    }
+  }
+
+  window.quitToTitle = function quitToTitle() {
+    try {
+      localStorage.removeItem(PLAYER_NAME_KEY);
+    } catch {
+      // ignore (private mode / blocked storage)
+    }
+    window.location.reload();
+  };
+
+  function ensurePlayerName() {
+    const existing = getPlayerName();
+    if (existing) return Promise.resolve(existing);
+
+    const ask =
+      typeof window.askPlayerName === "function"
+        ? window.askPlayerName
+        : () => Promise.resolve(String(window.prompt("Your name:") ?? "").trim());
+
+    return Promise.resolve()
+      .then(() => ask())
+      .then((name) => {
+        const safe = String(name ?? "").trim();
+        const finalName = safe || "Player";
+        setPlayerName(finalName);
+        return getPlayerName() ?? finalName;
+      });
+  }
+
+
+
   function updateBestTimeUI() {
     const best = getBestWinTimeSeconds();
-    $("#bestTime").html(best == null ? "BEST: --:--" : `BEST: ${formatSeconds(best)}`);
+    const name = getBestWinName();
+
+    const fallback = String(window.prompt("Your name:") ?? "").trim();
+    if (fallback) setPlayerName(fallback);
+    return Promise.resolve(getPlayerName() ?? fallback);
+  }
+
+  function updateBestTimeUI() {
+    const best = getBestWinTimeSeconds();
+    const name = getBestWinName();
+    $("#bestTime").html(
+      best == null
+        ? "BEST: --:--"
+        : name
+          ? `BEST: ${formatSeconds(best)} (${name})`
+          : `BEST: ${formatSeconds(best)}`
+    );
+  }
+
+  function renderLeaderboard() {
+    const $list = $("#leaderboardList");
+    if (!$list.length) return;
+
+    const entries = getLeaderboard();
+    $list.empty();
+
+    if (entries.length === 0) {
+      $list.append($("<li>").addClass("lb-empty").text("No records yet"));
+      return;
+    }
+
+    entries.forEach((entry, index) => {
+      const $row = $("<li>").addClass("lb-row").toggleClass("is-first", index === 0);
+      $row.append($("<span>").addClass("lb-rank").text(`#${index + 1}`));
+      $row.append($("<span>").addClass("lb-name").text(entry.name));
+      $row.append($("<span>").addClass("lb-time").text(formatSeconds(entry.seconds)));
+      $list.append($row);
+    });
+  }
+
+  function updateScoreUI() {
+    if (!$("#score").length) return;
+    $("#score").html(`SCORE: ${bricksDestroyed}`);
   }
 
   function shuffleInPlace(arr) {
@@ -121,12 +281,13 @@ function drawIt() {
     timerTicks = 0;
     timerText = "00:00";
     isTimerRunning = true;
-    hitBricks = 0;
+    bricksDestroyed = 0;
     powerupDrop.active = false;
     paddleBoostUntil = 0;
-    $("#imgDesna").attr("src", "").css("visibility", "hidden");
     $("#time").html(timerText);
+    updateScoreUI();
     updateBestTimeUI();
+    renderLeaderboard();
     init_paddle();
     initbricks();
     $(document)
@@ -141,8 +302,8 @@ function drawIt() {
   function initbricks() { //inicializacija opek - polnjenje v tabelo
     let i, j;
     brickRows = 5;
-    brickCols = 13;
-    brickWidth = 50;
+    brickCols = 9;
+    brickWidth = 74.5;
     brickHeight = 40;
     brickPadding = 3;
 
@@ -206,7 +367,7 @@ function drawIt() {
     ctx.drawImage(brickImage, x, y, brickWidth, brickHeight);
     ctx.shadowBlur = 0;
 
-    
+
     ctx.restore();
   }
 
@@ -271,39 +432,10 @@ function drawIt() {
           new Audio("assets/sound/hit.mp3").play(); //če bi dal v const bi se slišalo samo enkrat ko bi jih več razbil.
 
           if (brickGrid[bi][bj].hp === 0) {
-            hitBricks++;
+            bricksDestroyed++;
+            updateScoreUI();
           }
 
-          if (hitBricks == 10 || hitBricks == 20 || hitBricks == 30 || hitBricks == 40) {
-            cash.currentTime = 0;
-            cash.play();
-          }
-          if (hitBricks >= 40) {
-            $("#imgDesna").attr("src", "assets/img/money4.png").css("visibility", "visible");
-            $("#canvas").css({
-              "background-image": "url()",
-              "background-position": "center"
-            });
-          } else if (hitBricks >= 30) {
-            $("#imgDesna").attr("src", "assets/img/money3.png").css("visibility", "visible");
-            $("#canvas").css({
-              "background-image": "url()",
-              "background-position": "center"
-            });
-          } else if (hitBricks >= 20) {
-            $("#imgDesna").attr("src", "assets/img/money2.png").css("visibility", "visible");
-            $("#canvas").css({
-              "background-image": "url()",
-              "background-position": "center"
-            });
-          } else if (hitBricks >= 10) {
-            $("#imgDesna").attr("src", "assets/img/money1.png").css("visibility", "visible");
-            $("#canvas").css({
-              "background-image": "url()",
-              "background-size": "cover",
-              "background-position": "center"
-            });
-          }
         }
       }
     }
@@ -319,9 +451,13 @@ function drawIt() {
 
       const current = parseTimeToSeconds(timerText);
       if (current != null) {
+        addLeaderboardEntry(current, getPlayerName() ?? "Player");
+        renderLeaderboard();
+
         const best = getBestWinTimeSeconds();
         if (best == null || current < best) {
           setBestWinTimeSeconds(current);
+          setBestWinName(getPlayerName() ?? "Player");
         }
       }
       updateBestTimeUI();
@@ -432,10 +568,13 @@ function drawIt() {
 
   function startGame() {
     if (hasStarted) return;
-    hasStarted = true;
-    setPlayButtonVisible(false);
-    init();
-    if (onStartKeyDown) document.removeEventListener("keydown", onStartKeyDown);
+    ensurePlayerName().then(() => {
+      if (hasStarted) return;
+      hasStarted = true;
+      setPlayButtonVisible(false);
+      init();
+      if (onStartKeyDown) document.removeEventListener("keydown", onStartKeyDown);
+    });
   }
 
   if (playBtn) {
@@ -454,4 +593,8 @@ function drawIt() {
     // fallback: if the button is missing, keep old behavior
     init();
   }
+
+  ensurePlayerName();
+  updateScoreUI();
+  renderLeaderboard();
 }

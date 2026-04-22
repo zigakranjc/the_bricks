@@ -15,15 +15,17 @@
                 <div id="leftPanel">
                     <button id="aboutBtn">ABOUT</button>
                     <div id="time">00:00</div>
-                    <div id="bestTime">BEST: --:--</div>
-                    <div id="bestRecord"></div>
+                    <div id="score"></div>
                 </div>
                 <button id="playBtn" type="button" aria-label="Play" title="Play"></button>
                 <canvas id="canvas" width="700" height="550"></canvas>
-                <img id="imgDesna" src="" height="500" style="visibility:hidden;">
-            </div>
-        </div>
-    </div>
+                 <div id="rightPanel">
+                     <div class="panelTitle">LEADERBOARD</div>
+                     <ol id="leaderboardList"></ol>
+                 </div>
+             </div>
+         </div>
+     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/sweetAlert.js"></script>
     <script src="js/jquery.js"></script>
