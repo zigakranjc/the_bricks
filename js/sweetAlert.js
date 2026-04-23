@@ -9,7 +9,7 @@ function showGameOver(time) {
         background: "url(assets/img/sa_bg.png) center / contain  no-repeat",
         customClass: {
             popup: "bigger-swal",
-            confirmButton: "sa-btn-image",
+            confirmButton: "sa-btn-try",
             denyButton: "sa-btnQuit-image",
         },
         color: "#03056076",
@@ -63,7 +63,8 @@ let aboutBtn = document.getElementById("aboutBtn");
 aboutBtn.addEventListener("click", function () {
     if (window.Swal && typeof window.Swal.fire === "function") {
         window.Swal.fire({
-            html: `<div style="padding-top: 15vh; font-size: 30px; font-weight: bold; font-family: Arial, sans-serif;">Žiga Kranjc <br>4. Rb</div>`,
+            title: `<div style=" padding-top: 10vh; font-size: 20px; font-family: Arial, sans-serif; color: #03056076;">DEVELOPED BY</div>`,
+            html: `<div style="font-size: 30px; font-weight: bold; font-family: Arial, sans-serif;">Žiga Kranjc <br>4. Rb</div>`,
             background: "url(assets/img/sa_bg.png) center / contain  no-repeat",
             color: "#03056076",
             customClass: {
@@ -81,14 +82,14 @@ function showWin(time) {
     Swal.fire({
         title: `<div style="margin-top: 12vh; font-family: Arial, sans-serif;">YOU WIN!</div>`,
         html: `<div font-family: Arial, sans-serif;">Time: <b>${time}</b> s</div>`,
-        confirmButtonText: "PLAY AGAIN",
+        confirmButtonText: "",
         confirmButtonColor: "transparent",
         showDenyButton: true,
-        denyButtonText: "QUIT",
+        denyButtonText: "",
         background: "url(assets/img/sa_bg.png) center / contain no-repeat",
         customClass: {
             popup: "bigger-swal",
-            confirmButton: "sa-btn-image",
+            confirmButton: "sa-btn-play",
             denyButton: "sa-btnQuit-image",
         },
         color: "#03056076",

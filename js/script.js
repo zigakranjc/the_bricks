@@ -253,7 +253,7 @@ function drawIt() {
       const $row = $("<li>").addClass("lb-row").toggleClass("is-first", index === 0);
       $row.append($("<span>").addClass("lb-rank").text(`#${index + 1}`));
       $row.append($("<span>").addClass("lb-name").text(entry.name));
-      $row.append($("<span>").addClass("lb-time").text(formatSeconds(entry.seconds)));
+      $row.append($("<span>").addClass("lb-time").text(`${formatSeconds(entry.seconds)}\u00A0s`));
       $list.append($row);
     });
   }
@@ -503,8 +503,29 @@ function drawIt() {
       }
     }
 
-    ctx.fillStyle = paddleWidth > paddleBaseWidth ? "#0084ff" : paddlecolor;
+    const isPaddleBoosted = paddleWidth > paddleBaseWidth;
+
+    ctx.save();
+
+    if (isPaddleBoosted) {
+      const now = Date.now();
+      const pulse = (Math.sin(now / 120) + 1) / 2; // 0..1
+      const alpha = 0.25 + pulse * 0.55;
+
+      // glow behind paddle (more visible than relying on shadow alone)
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.shadowColor = `rgba(255, 255, 255, ${alpha})`;
+      ctx.shadowBlur = 10 + pulse * 24;
+      rect(paddleX - 2, canvasHeight - paddleHeight - 2, paddleWidth + 4, paddleHeight + 4);
+
+      // reset shadow for the actual paddle fill
+      ctx.shadowBlur = 0;
+    }
+
+    ctx.fillStyle = paddlecolor;
     rect(paddleX, canvasHeight - paddleHeight, paddleWidth, paddleHeight);
+
+    ctx.restore();
 
     if (paddleWidth > paddleBaseWidth) {
       let remaining = Math.max(0, paddleBoostUntil - Date.now()) / 1000;

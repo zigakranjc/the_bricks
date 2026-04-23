@@ -182,9 +182,11 @@ body {
 }
 
 .lb-time {
-    width: 64px;
+    width: 80px;
+    flex: 0 0 auto;
     text-align: right;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
     padding-right: 2vw;
     padding-bottom: 1.5vh;
 }
@@ -292,22 +294,25 @@ body {
 
 #powerupTimer {
     font-size: 20px;
-    width: 13vw;
+    width: 15vw;
     height: 10vh;
     color: #03056076;
     font-weight: bold;
     background-image: url(assets/img/pannel_element_bg.png);
     background-position: center;
+    background-repeat: no-repeat;
     background-size: cover;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    white-space: nowrap;
     visibility: hidden;
     animation: blink 0.8s ease-in-out infinite;
     position: absolute;
     right: 0;
     filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 8px rgba(0, 0, 255, 0.55));
+    padding-bottom: 1.5vh;  
 }
 
 #powerupTimer.active {
@@ -379,7 +384,7 @@ body {
     filter: brightness(1.05);
 }
 
-.swal2-confirm.sa-btn-image {
+.swal2-confirm.sa-btn-try {
     width: 10vw;
     height: 90px;
     padding: 0 !important;
@@ -395,7 +400,28 @@ body {
     margin-bottom: 10vh;
 }
 
-.swal2-confirm.sa-btn-image:hover {
+.swal2-confirm.sa-btn-try:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+}
+
+.swal2-confirm.sa-btn-play {
+    width: 10vw;
+    height: 90px;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 15px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: url(assets/img/play_again.png) center / contain no-repeat !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: black !important;
+    font-weight: bold;
+    margin-bottom: 10vh;
+}
+
+.swal2-confirm.sa-btn-play:hover {
     transform: translateY(-2px);
     filter: brightness(1.05);
 }
