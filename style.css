@@ -70,7 +70,7 @@ body {
 
 #leftPanel {
     height: 40vh;
-    width: 15vw;
+    width: 17vw;
     padding: 30px;
     border-radius: 16px;
     background-image: url(assets/img/pannel_bg.png);
@@ -89,7 +89,7 @@ body {
 
 #rightPanel {
     height: 40vh;
-    width: 15vw;
+    width: 17vw;
     padding: 30px;
     border-radius: 16px;
     background-image: url(assets/img/pannel_bg.png);
@@ -102,7 +102,7 @@ body {
     gap: 12px;
     position: absolute;
     top: 50%;
-    right: -300px;
+    right: -25vw;
     transform: translateY(-50%);
 }
 
@@ -159,11 +159,6 @@ body {
     font-weight: 900;
 }
 
-.lb-row.is-first {
-    filter: brightness(1.07);
-    box-shadow: 0 0 18px rgba(255, 215, 0, 0.35);
-}
-
 .lb-rank {
     width: 44px;
     text-align: left;
@@ -202,7 +197,6 @@ body {
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
     border-radius: 10px;
     cursor: pointer;
-    text-align: center;
     background-image: url(assets/img/pannel_element_bg.png);
     padding-bottom: 10px;
     background-repeat: no-repeat;
@@ -369,14 +363,20 @@ body {
     height: 400px;
 }
 
+.bigger-swal .swal2-actions {
+    justify-content: center !important;
+}
+
 .swal2-confirm.sa-btnAbout-image {
-    width: 30vw;
-    height: 10vh;
+    width: clamp(200px, 30vw, 320px);
+    height: clamp(56px, 10vh, 90px);
+    padding: 0 !important;
+    border: none !important;
     background: url(assets/img/okBtn.png) center / contain no-repeat !important;
     background-color: transparent !important;
     box-shadow: none !important;
     font-weight: bold;
-    margin-bottom: 7vh;
+    margin: 0 auto 5vh auto !important;
 }
 
 .swal2-confirm.sa-btnAbout-image:hover {
@@ -397,7 +397,7 @@ body {
     box-shadow: none !important;
     color: black !important;
     font-weight: bold;
-    margin-bottom: 10vh;
+    margin-bottom: 5vh;
 }
 
 .swal2-confirm.sa-btn-try:hover {
@@ -418,7 +418,7 @@ body {
     box-shadow: none !important;
     color: black !important;
     font-weight: bold;
-    margin-bottom: 10vh;
+    margin-bottom: 5vh;
 }
 
 .swal2-confirm.sa-btn-play:hover {
@@ -427,8 +427,14 @@ body {
 }
 
 .swal2-input.sa-name-input {
-    width: 20vw;
-    margin-left: 7vw;
+    width: clamp(220px, 30vw, 360px);
+    margin: 1em auto 0 auto !important;
+    background-color: rgba(0, 0, 0, 0.534);
+}
+
+.swal2-input.sa-name-input {
+    width: 18vw;
+    margin-left: 4.8vw;
     background-color: rgba(0, 0, 0, 0.534);
 }
 
@@ -458,7 +464,7 @@ body {
     box-shadow: none !important;
     color: black !important;
     font-weight: bold;
-    margin-bottom: 10vh;
+    margin-bottom: 5vh;
 }
 
 .swal2-deny.sa-btnQuit-image:hover {
