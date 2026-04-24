@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎮 THE MONEY BRICKS
+# 🎮 THE ICE BRICKS
 *A browser-based brick breaker game featuring power-ups, progression rewards, and dynamic canvas rendering.*
 
 </div>
