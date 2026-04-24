@@ -287,15 +287,15 @@ body {
 }
 
 #powerupTimer {
-    font-size: 20px;
-    width: 15vw;
-    height: 10vh;
+    font-size: clamp(14px, 1.6vw, 18px);
+    width: clamp(150px, 12vw, 220px);
+    height: clamp(44px, 6vh, 64px);
     color: #03056076;
     font-weight: bold;
     background-image: url(assets/img/pannel_element_bg.png);
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: 100% 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -306,7 +306,7 @@ body {
     position: absolute;
     right: 0;
     filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 8px rgba(0, 0, 255, 0.55));
-    padding-bottom: 1.5vh;  
+    padding: 0;
 }
 
 #powerupTimer.active {
