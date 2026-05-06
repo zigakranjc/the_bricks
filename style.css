@@ -197,14 +197,20 @@ canvas {
     height: 400px;
 }
 
+.bigger-swal .swal2-actions {
+    justify-content: center !important;
+}
+
 .swal2-confirm.sa-btnAbout-image {
-    width: 30vw;
-    height: 10vh;
+    width: clamp(200px, 30vw, 320px);
+    height: clamp(56px, 10vh, 90px);
+    padding: 0 !important;
+    border: none !important;
     background: url(assets/img/okBtn.png) center / contain no-repeat !important;
     background-color: transparent !important;
     box-shadow: none !important;
     font-weight: bold;
-    margin-bottom: 7vh;
+    margin: 0 auto 5vh auto !important;
 }
 
 .swal2-confirm.sa-btnAbout-image:hover {
@@ -225,7 +231,7 @@ canvas {
     box-shadow: none !important;
     color: black !important;
     font-weight: bold;
-    margin-bottom: 10vh;
+    margin-bottom: 5vh;
 }
 
 .swal2-confirm.sa-btn-try:hover {
@@ -246,7 +252,7 @@ canvas {
     box-shadow: none !important;
     color: black !important;
     font-weight: bold;
-    margin-bottom: 10vh;
+    margin-bottom: 5vh;
 }
 
 .swal2-confirm.sa-btn-play:hover {
@@ -288,7 +294,7 @@ canvas {
     box-shadow: none !important;
     color: black !important;
     font-weight: bold;
-    margin-bottom: 10vh;
+    margin-bottom: 5vh;
 }
 
 .swal2-deny.sa-btnQuit-image:hover {

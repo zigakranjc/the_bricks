@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎮 THE MONEY BRICKS
+# 🎮 THE ICE BRICKS
 *A browser-based brick breaker game featuring power-ups, progression rewards, and dynamic canvas rendering.*
 
 </div>
@@ -12,7 +12,8 @@
 **Brick Breaker** is a browser-based arcade game where the player controls a paddle to keep a ball in play and destroy all bricks. Features a power-up system, progressive background changes, sound effects, and a custom SweetAlert2 game over screen.
 
 ## Project Structure
-project/
+<pre>
+the_bricks/
 ├── index.html
 ├── style.css
 ├── js/
@@ -22,6 +23,7 @@ project/
 └── assets/
 ├── img/
 └── sound/
+</pre>
 
 ## Technical Features
 
