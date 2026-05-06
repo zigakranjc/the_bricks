@@ -1,5 +1,5 @@
 function showGameOver(time) {
-    Swal.fire({
+    return Swal.fire({
         title: `<div style="margin-top: 12vh; font-family: Arial, sans-serif;">GAME OVER!</div>`,
         html: `<div style= font-family: Arial, sans-serif;>Time played: <b>${time}</b> s</div>`,
         confirmButtonText: "",
@@ -65,7 +65,7 @@ aboutBtn.addEventListener("click", function () {
 });
 
 function showWin(time) {
-    Swal.fire({
+    return Swal.fire({
         title: `<div style="margin-top: 12vh; font-family: Arial, sans-serif;">YOU WIN!</div>`,
         html: `<div font-family: Arial, sans-serif;">Time: <b>${time}</b> s</div>`,
         confirmButtonText: "",
