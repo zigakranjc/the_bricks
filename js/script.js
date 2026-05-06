@@ -1,621 +1,352 @@
 function drawIt() {
-  const playBtn = document.getElementById("playBtn");
-  let ctx;
-  let ball;
-  const ballRadius = 15;
-  const initialBallDx = 2;
-  const initialBallDy = 4;
-  const BEST_TIME_KEY = "bestWinTimeSeconds";
-  const BEST_NAME_KEY = "bestWinName";
-  const PLAYER_NAME_KEY = "playerName";
-  const LEADERBOARD_KEY = "leaderboardV1";
-  const LEADERBOARD_LIMIT = 5;
-  let hasStarted = false;
-  let canvasWidth;
-  let canvasHeight;
-  let paddleX;
-  let paddleHeight;
-  let paddleWidth;
-  let paddleBaseWidth; // za spreminjanje paddle sirine nazaj na normalno po powerup
-  let paddleBoostUntil = 0; // za spreminjanje paddle sirine nazaj na normalno po powerup
-  let gameLoopId;
-  let isRightPressed = false;
-  let isLeftPressed = false;
-  let brickGrid;
-  let brickRows;
-  let brickCols;
-  let brickWidth;
-  let brickHeight;
-  let brickPadding;
-  let spacingFactor = 0;
-  // some bricks need two hits
-  const TOUGH_BRICK_HITS = 2;
-  const TOUGH_BRICK_COUNT = 15;
-  let paddlecolor = "white";
-  let isTimerRunning = true;
-  let timerTicks = 0;
-  let timerText = "00:00";
-  let secondsText, minutesText;
-  let bricksDestroyed = 0;
-  //element, ki poveča paddleinti
-  let powerupDrop = {
-    x: 0,
-    y: 0,
-    w: 40,
-    h: 30,
-    speed: 3,
-    active: false,
-  };
+    var timerId;
+    var sekunde;
+    var x = 350;
+    var y = 230;
+    var dx = 2;
+    var dy = 4;
+    var ctx;
+    var r = 15;
+    var canvas
+    var paddlex;
+    var paddleh;
+    var paddlew;
+    var rightDown = false;
+    var leftDown = false;
+    var bricks;
+    var NROWS;
+    var NCOLS;
+    var BRICKWIDTH;
+    var BRICKHEIGHT;
+    var PADDING;
+    var intervalId;
+    var f = 0;
+    var start = true;
+    const imgBrick = new Image();
+    imgBrick.src = "assets/img/ice_brick.png";
+    const imgBrickBroken = new Image();
+    imgBrickBroken.src = "assets/img/ice_brick_broken.png";
+    const imgSnowBall = new Image();
+    imgSnowBall.src = "assets/img/snowball.png";
+    const powerup = new Audio("assets/sound/powerup.mp3");
+    const imgDrop = new Image();
+    imgDrop.src = "assets/img/snowflake_drop.png"
 
-  const imgBrick = new Image();
-  imgBrick.src = "assets/img/ice_brick.png";
-  const imgBrickBroken = new Image();
-  imgBrickBroken.src = "assets/img/ice_brick_broken.png";
-  const imgSnowBall = new Image();
-  imgSnowBall.src = "assets/img/snowball.png";
-  const powerup = new Audio("assets/sound/powerup.mp3");
-  const imgDrop = new Image();
-  imgDrop.src = "assets/img/snowflake_drop.png";
-  const imgBg = new Image();
-  imgBg.src = "assets/img/bg.png";
-
-  function setPlayButtonVisible(visible) {
-    if (!playBtn) return;
-    playBtn.style.display = visible ? "" : "none";
-  }
-
-  function parseTimeToSeconds(timeText) {
-    // expects "MM:SS"
-    const [mm, ss] = String(timeText).split(":");
-    const minutes = Number(mm);
-    const seconds = Number(ss);
-    if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
-    return minutes * 60 + seconds;
-  }
-
-  function formatSeconds(totalSeconds) {
-    const safe = Math.max(0, Math.floor(totalSeconds));
-    const minutes = Math.floor(safe / 60);
-    const seconds = safe % 60;
-    const mm = String(minutes).padStart(2, "0");
-    const ss = String(seconds).padStart(2, "0");
-    return `${mm}:${ss}`;
-  }
-
-  function getLeaderboard() {
-    try {
-      const raw = localStorage.getItem(LEADERBOARD_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      const cleaned = parsed
-        .map((entry) => ({
-          name: String(entry?.name ?? "").trim(),
-          seconds: Number(entry?.seconds),
-          date: String(entry?.date ?? ""),
-        }))
-        .filter((entry) => entry.name && Number.isFinite(entry.seconds) && entry.seconds >= 0);
-      cleaned.sort((a, b) => a.seconds - b.seconds);
-      return cleaned.slice(0, LEADERBOARD_LIMIT);
-    } catch {
-      return [];
+    function init_bricks() { //inicializacija opek - polnjenje v tabelo
+        NROWS = 5;
+        NCOLS = 9;
+        BRICKWIDTH = (WIDTH / NCOLS) - 1;
+        BRICKHEIGHT = 40;
+        PADDING = 1;
+        bricks = new Array(NROWS);
+        for (i = 0; i < NROWS; i++) {
+            bricks[i] = new Array(NCOLS);
+            for (j = 0; j < NCOLS; j++) {
+                bricks[i][j] = 1;
+            }
+        }
     }
-  }
-
-  function setLeaderboard(entries) {
-    try {
-      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries));
-    } catch {
-      // ignore (private mode / blocked storage)
-    }
-  }
-
-  function addLeaderboardEntry(seconds, name) {
-    const safeName = String(name ?? "").trim() || "Player";
-    const safeSeconds = Number(seconds);
-    if (!Number.isFinite(safeSeconds) || safeSeconds < 0) return getLeaderboard();
-
-    const next = [
-      ...getLeaderboard(),
-      { name: safeName, seconds: Math.floor(safeSeconds), date: new Date().toISOString() },
-    ];
-    next.sort((a, b) => a.seconds - b.seconds);
-    const trimmed = next.slice(0, LEADERBOARD_LIMIT);
-    setLeaderboard(trimmed);
-    return trimmed;
-  }
-
-  function getBestWinTimeSeconds() {
-    try {
-      const raw = localStorage.getItem(BEST_TIME_KEY);
-      if (raw == null) return null;
-      const n = Number(raw);
-      return Number.isFinite(n) ? n : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function getBestWinName() {
-    try {
-      const raw = localStorage.getItem(BEST_NAME_KEY);
-      if (raw == null) return null;
-      const name = String(raw).trim();
-      return name ? name : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function setBestWinTimeSeconds(seconds) {
-    try {
-      localStorage.setItem(BEST_TIME_KEY, String(seconds));
-    } catch {
-      // ignore (private mode / blocked storage)
-    }
-  }
-
-  function setBestWinName(name) {
-    try {
-      const safe = String(name ?? "").trim();
-      if (!safe) return;
-      localStorage.setItem(BEST_NAME_KEY, safe);
-    } catch {
-      // ignore (private mode / blocked storage)
-    }
-  }
-
-  function getPlayerName() {
-    try {
-      const raw = localStorage.getItem(PLAYER_NAME_KEY);
-      if (raw == null) return null;
-      const name = String(raw).trim();
-      return name ? name : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function setPlayerName(name) {
-    try {
-      const safe = String(name ?? "").trim();
-      if (!safe) return;
-      localStorage.setItem(PLAYER_NAME_KEY, safe);
-    } catch {
-      // ignore (private mode / blocked storage)
-    }
-  }
-
-  window.quitToTitle = function quitToTitle() {
-    try {
-      localStorage.removeItem(PLAYER_NAME_KEY);
-    } catch {
-      // ignore (private mode / blocked storage)
-    }
-    window.location.reload();
-  };
-
-  function ensurePlayerName() {
-    const existing = getPlayerName();
-    if (existing) return Promise.resolve(existing);
-
-    const ask =
-      typeof window.askPlayerName === "function"
-        ? window.askPlayerName
-        : () => Promise.resolve(String(window.prompt("Your name:") ?? "").trim());
-
-    return Promise.resolve()
-      .then(() => ask())
-      .then((name) => {
-        const safe = String(name ?? "").trim();
-        const finalName = safe || "Player";
-        setPlayerName(finalName);
-        return getPlayerName() ?? finalName;
-      });
-  }
-
-
-
-  function updateBestTimeUI() {
-    const best = getBestWinTimeSeconds();
-    const name = getBestWinName();
-
-    const fallback = String(window.prompt("Your name:") ?? "").trim();
-    if (fallback) setPlayerName(fallback);
-    return Promise.resolve(getPlayerName() ?? fallback);
-  }
-
-  function updateBestTimeUI() {
-    const best = getBestWinTimeSeconds();
-    const name = getBestWinName();
-    $("#bestTime").html(
-      best == null
-        ? "BEST: --:--"
-        : name
-          ? `BEST: ${formatSeconds(best)} (${name})`
-          : `BEST: ${formatSeconds(best)}`
-    );
-  }
-
-  function renderLeaderboard() {
-    const $list = $("#leaderboardList");
-    if (!$list.length) return;
-
-    const entries = getLeaderboard();
-    $list.empty();
-
-    if (entries.length === 0) {
-      $list.append($("<li>").addClass("lb-empty").text("No records yet"));
-      return;
+    //nastavljanje leve in desne tipke
+    function onKeyDown(evt) {
+        if (evt.keyCode == 39)
+            rightDown = true;
+        else if (evt.keyCode == 37) leftDown = true;
+        else if (evt.keyCode == 32) restart();
     }
 
-    entries.forEach((entry, index) => {
-      const $row = $("<li>").addClass("lb-row").toggleClass("is-first", index === 0);
-      $row.append($("<span>").addClass("lb-rank").text(`#${index + 1}`));
-      $row.append($("<span>").addClass("lb-name").text(entry.name));
-      $row.append($("<span>").addClass("lb-time").text(`${formatSeconds(entry.seconds)}\u00A0s`));
-      $list.append($row);
-    });
-  }
-
-  function updateScoreUI() {
-    if (!$("#score").length) return;
-    $("#score").html(`SCORE: ${bricksDestroyed}`);
-  }
-
-  function shuffleInPlace(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+    function onKeyUp(evt) {
+        if (evt.keyCode == 39)
+            rightDown = false;
+        else if (evt.keyCode == 37) leftDown = false;
     }
-  }
+    $(document).keydown(onKeyDown);
+    $(document).keyup(onKeyUp);
 
-  function init() {
-    if (gameLoopId) {
-      clearInterval(gameLoopId); // <-- ustavi starega(ko sm refreshu je če ne žogica šla bl hitro)
+    function restart() {
+        clearInterval(intervalId);
+        clearInterval(timerId);
+        x = 150;
+        y = 150;
+        dx = 2;
+        dy = 4;
+        start = true;
+        sekunde = 0;
+        izpisTimer = "--:--";
+        $("#time").html("Time: " + izpisTimer);
+
+        init_bricks();
+        init_paddle();
+        intervalId = setInterval(draw, 10);
+        timerId = setInterval(timer, 1000);
     }
-    ctx = $('#canvas')[0].getContext("2d");
-    canvasWidth = $("#canvas").width();
-    canvasHeight = $("#canvas").height();
-    ball = { x: canvasWidth / 2, y: canvasHeight / 2, dx: initialBallDx, dy: initialBallDy };
-    timerTicks = 0;
-    timerText = "00:00";
-    isTimerRunning = true;
-    bricksDestroyed = 0;
-    powerupDrop.active = false;
-    paddleBoostUntil = 0;
-    $("#time").html(timerText);
-    updateScoreUI();
-    updateBestTimeUI();
-    renderLeaderboard();
-    init_paddle();
-    initbricks();
-    $(document)
-      .off("keydown.bricks", onKeyDown)
-      .off("keyup.bricks", onKeyUp)
-      .on("keydown.bricks", onKeyDown)
-      .on("keyup.bricks", onKeyUp);
-    gameLoopId = setInterval(draw, 10);
-    return gameLoopId;
-  }
 
-  function initbricks() { //inicializacija opek - polnjenje v tabelo
-    let i, j;
-    brickRows = 5;
-    brickCols = 9;
-    brickWidth = 74.5;
-    brickHeight = 40;
-    brickPadding = 3;
+    function draw() {
+        clear();
+        circle(x, y, r);
+        //premik ploščice levo in desno
+        if (rightDown) {
+            if ((paddlex + paddlew) < WIDTH) {
+                paddlex += 5;
+            } else {
+                paddlex = WIDTH - paddlew;
+            }
+        }
+        else if (leftDown) {
+            if (paddlex > 0) {
+                paddlex -= 5;
+            } else {
+                paddlex = 0;
+            }
+        }
+        rect(paddlex, HEIGHT - paddleh, paddlew, paddleh);
 
-    const positions = [];
-    for (i = 0; i < brickRows; i++) {
-      for (j = 0; j < brickCols; j++) {
-        positions.push([i, j]);
-      }
+        //riši opeke
+        for (i = 0; i < NROWS; i++) {
+            for (j = 0; j < NCOLS; j++) {
+                if (bricks[i][j] == 1) {
+                    ctx.drawImage(imgBrick, (j * (BRICKWIDTH + PADDING)) + PADDING,
+                        (i * (BRICKHEIGHT + PADDING)) + PADDING,
+                        BRICKWIDTH, BRICKHEIGHT);
+                }
+            }
+        }
+
+        rowheight = BRICKHEIGHT + PADDING; //Smo zadeli opeko?
+        colwidth = BRICKWIDTH + PADDING;
+        row = Math.floor(y / rowheight);
+        col = Math.floor(x / colwidth);
+        //Če smo zadeli opeko, vrni povratno kroglo in označi v tabeli, da opeke ni več
+        if (row >= 0 && row < NROWS && col >= 0 && col < NCOLS && bricks[row][col] == 1) {
+            var brickX = col * colwidth + PADDING;
+            var brickY = row * rowheight + PADDING;
+
+            if (x - r < brickX || x + r > brickX + BRICKWIDTH) dx = -dx;
+            else dy = -dy;
+
+            bricks[row][col] = 0;
+        }
+        if (x + dx > WIDTH - r || x + dx < r)//levo desno rob canvas
+            dx = -dx;
+        if (y + dy < 0 + r)//gor rob canvas
+            dy = -dy;
+        else if (y + dy > HEIGHT - (r + paddleh)) {
+            //Odboj kroglice, ki je odvisen od odboja od ploščka 
+            if (x > paddlex && x < paddlex + paddlew) {
+                dx = 8 * ((x - (paddlex + paddlew / 2)) / paddlew);
+                dy = -dy;
+                start = true; // teče
+            }
+            else if (y + dy > HEIGHT) {
+                start = false; // ustavi
+                clearInterval(intervalId);
+                clear();
+                showGameOver(izpisTimer).then(function (result) {
+                    if (result.isConfirmed) {
+                        document.getElementById("playBtn").style.display = "";
+                        document.getElementById("playBtn").onclick = function () {
+                            document.getElementById("playBtn").style.display = "none";
+                            startGame();
+                        };
+                    } else if (result.isDenied) {
+                        askPlayerName().then(function (name) {
+                            playerName = name;
+                            document.getElementById("playBtn").style.display = "";
+                            document.getElementById("playBtn").onclick = function () {
+                                document.getElementById("playBtn").style.display = "none";
+                                startGame();
+                            };
+                        });
+                    }
+                });
+            }
+
+        }
+
+        //preveri če smo zmagali
+        function checkWin() {
+            for (i = 0; i < NROWS; i++) {
+                for (j = 0; j < NCOLS; j++) {
+                    if (bricks[i][j] == 1) return; //ni še konec
+                }
+            }
+            //vse opeke so uničene
+            clearInterval(intervalId);
+            clearInterval(timerId);
+            start = false;
+            saveBestTime();
+            clear(); // počisti canvas preden se pokaže swal, ker če ne se zadnja opeka ne izbriše
+            showWin(izpisTimer).then(function (result) {
+                if (result.isConfirmed) {
+                    document.getElementById("playBtn").style.display = "";
+                    document.getElementById("playBtn").onclick = function () {
+                        document.getElementById("playBtn").style.display = "none";
+                        startGame();
+                    };
+                } else if (result.isDenied) {
+                    askPlayerName().then(function (name) {
+                        playerName = name;
+                        document.getElementById("playBtn").style.display = "";
+                        document.getElementById("playBtn").onclick = function () {
+                            document.getElementById("playBtn").style.display = "none";
+                            startGame();
+                        };
+                    });
+                }
+            });
+        }
+        x += dx;
+        y += dy;
+        checkWin();
     }
-    shuffleInPlace(positions);
-    const toughPositions = new Set(
-      positions.slice(0, TOUGH_BRICK_COUNT).map(([row, col]) => `${row},${col}`)
-    );
+    function init_paddle() {
+        paddlex = WIDTH / 2;
+        paddleh = 10;
+        paddlew = 75;
+    }
 
-    brickGrid = new Array(brickRows);
-    for (i = 0; i < brickRows; i++) {
-      brickGrid[i] = new Array(brickCols);
-      for (j = 0; j < brickCols; j++) {
-        const isTough = toughPositions.has(`${i},${j}`);
-        brickGrid[i][j] = {
-          hp: isTough ? TOUGH_BRICK_HITS : 1,
-          maxHp: isTough ? TOUGH_BRICK_HITS : 1,
+    function init() {
+        ctx = $('#canvas')[0].getContext("2d");
+        WIDTH = $("#canvas").width();
+        HEIGHT = $("#canvas").height();
+        sekunde = 0;
+        izpisTimer = "--:--";
+    }
+
+    function circle(x, y, r) {
+        ctx.drawImage(
+            imgSnowBall,
+            x - r, y - r,   // zgornji levi kot
+            r * 2, r * 2    // širina, višina
+        );
+    }
+
+    function rect(x, y, w, h) {
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function clear() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    }
+
+    function timer() {
+        if (start == true) {
+            sekunde++;
+
+            sekundeI = ((sekundeI = (sekunde % 60)) > 9) ? sekundeI : "0" + sekundeI;
+            minuteI = ((minuteI = Math.floor(sekunde / 60)) > 9) ? minuteI : "0" + minuteI;
+            izpisTimer = minuteI + ":" + sekundeI;
+            $("#time").html("Time: " + izpisTimer);
+        }
+    }
+
+    function saveBestTime() {
+        let time1 = parseInt(localStorage.getItem("bestTime1")) || Infinity;
+        let time2 = parseInt(localStorage.getItem("bestTime2")) || Infinity;
+        let time3 = parseInt(localStorage.getItem("bestTime3")) || Infinity;
+
+        var name1 = localStorage.getItem("bestName1") || "";
+        var name2 = localStorage.getItem("bestName2") || "";
+        var name3 = localStorage.getItem("bestName3") || "";
+
+
+
+        if (sekunde < time1) {
+            localStorage.setItem("bestTime3", time2);
+            localStorage.setItem("bestName3", name2);
+
+            localStorage.setItem("bestTime2", time1);
+            localStorage.setItem("bestName2", name1);
+
+            localStorage.setItem("bestTime1", sekunde);
+            localStorage.setItem("bestName1", playerName);
+
+        } else if (sekunde < time2) {
+            localStorage.setItem("bestTime3", time2);
+            localStorage.setItem("bestName3", name2);
+
+            localStorage.setItem("bestTime2", sekunde);
+            localStorage.setItem("bestName2", playerName);
+
+        } else if (sekunde < time3) {
+            localStorage.setItem("bestTime3", sekunde);
+            localStorage.setItem("bestName3", playerName);
+        }
+
+        showBestTime(sekunde);
+
+    }
+
+    function showBestTime() {
+        var time1 = localStorage.getItem("bestTime1");
+        var time2 = localStorage.getItem("bestTime2");
+        var time3 = localStorage.getItem("bestTime3");
+
+        var name1 = localStorage.getItem("bestName1");
+        var name2 = localStorage.getItem("bestName2");
+        var name3 = localStorage.getItem("bestName3");
+        if (time1 !== null) {
+            document.getElementById("bestTime1").style.visibility = "visible";
+            var s = parseInt(time1);
+            var sekundeI = ((sekundeI = (s % 60)) > 9) ? sekundeI : "0" + sekundeI;
+            var minuteI = ((minuteI = Math.floor(s / 60)) > 9) ? minuteI : "0" + minuteI;
+            var izpisBestTime = minuteI + ":" + sekundeI;
+            $("#bestTime1").html("1. " + name1 + " - " + izpisBestTime);
+
+        }
+        if (time2 !== null) {
+            document.getElementById("bestTime2").style.visibility = "visible";
+            var s = parseInt(time2);
+            var sekundeI = ((sekundeI = (s % 60)) > 9) ? sekundeI : "0" + sekundeI;
+            var minuteI = ((minuteI = Math.floor(s / 60)) > 9) ? minuteI : "0" + minuteI;
+            var izpisBestTime = minuteI + ":" + sekundeI;
+            $("#bestTime2").html("2. " + name2 + " - " + izpisBestTime);
+
+        }
+        if (time3 !== null) {
+            document.getElementById("bestTime3").style.visibility = "visible";
+            var s = parseInt(time3);
+            var sekundeI = ((sekundeI = (s % 60)) > 9) ? sekundeI : "0" + sekundeI;
+            var minuteI = ((minuteI = Math.floor(s / 60)) > 9) ? minuteI : "0" + minuteI;
+            var izpisBestTime = minuteI + ":" + sekundeI;
+            $("#bestTime3").html("3. " + name3 + " - " + izpisBestTime);
+
+        }
+    }
+
+    showBestTime();
+
+    askPlayerName().then(function (name) {
+        playerName = name;
+
+        document.getElementById("playBtn").onclick = function () {
+            document.getElementById("playBtn").style.display = "none";
+            startGame();
         };
-      }
-    }
-  }
-
-  function circle(x, y, r) {
-    ctx.drawImage(
-      imgSnowBall,
-      x - r, y - r,   // zgornji levi kot
-      r * 2, r * 2    // širina, višina
-    );
-  }
-
-  function clear() {
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-  }
-
-  function rect(x, y, w, h) {
-    ctx.beginPath();
-    ctx.rect(x, y, w, h);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  function drawBrick(x, y, brick) {
-    ctx.save();
-
-    const isTough = brick.maxHp >= TOUGH_BRICK_HITS;
-
-    // 2HP bricks: shadow (before first hit)
-    if (isTough && brick.hp >= TOUGH_BRICK_HITS) {
-      ctx.shadowColor = "white";
-      ctx.shadowBlur = 14;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-    }
-
-    const brickImage = (isTough && brick.hp === 1) ? imgBrickBroken : imgBrick;
-    ctx.drawImage(brickImage, x, y, brickWidth, brickHeight);
-    ctx.shadowBlur = 0;
-
-
-    ctx.restore();
-  }
-
-  function init_paddle() {
-    paddleX = canvasWidth / 2;
-    paddleHeight = 10;
-    paddleWidth = 100;
-    paddleBaseWidth = paddleWidth;
-  }
-
-  function onKeyDown(evt) {
-    if (evt.keyCode == 39)
-      isRightPressed = true;
-    else if (evt.keyCode == 37)
-      isLeftPressed = true;
-  }
-
-  function onKeyUp(evt) {
-    if (evt.keyCode == 39)
-      isRightPressed = false;
-    else if (evt.keyCode == 37)
-      isLeftPressed = false;
-  }
-
-  function draw() {
-    clear();
-
-    //random spuščanje elementa, ki poveča paddle
-    if (!powerupDrop.active && Math.random() < 0.001) {
-      powerupDrop.active = true;
-      powerupDrop.x = Math.random() * (canvasWidth - powerupDrop.w);
-      powerupDrop.y = -powerupDrop.h;
-    }
-
-    if (isTimerRunning == true) {
-      timerTicks++;
-      secondsText = ((secondsText = (timerTicks % 60)) > 9) ? secondsText : "0" + secondsText;
-      minutesText = ((minutesText = Math.floor(timerTicks / 60)) > 9) ? minutesText : "0" + minutesText;
-      timerText = minutesText + ":" + secondsText;
-      $("#time").html(timerText);
-    }
-
-    circle(ball.x, ball.y, ballRadius);
-
-    let rowHeight = brickHeight + brickPadding + spacingFactor / 2;
-    let colWidth = brickWidth + brickPadding + spacingFactor / 2;
-
-    for (let bi = 0; bi < brickRows; bi++) {
-      for (let bj = 0; bj < brickCols; bj++) {
-        if (brickGrid[bi][bj].hp <= 0) continue;
-
-        const bx = bj * colWidth + brickPadding;
-        const by = bi * rowHeight + brickPadding;
-        const nearX = Math.max(bx, Math.min(ball.x, bx + brickWidth));
-        const nearY = Math.max(by, Math.min(ball.y, by + brickHeight));
-        const dx = ball.x - nearX;
-        const dy = ball.y - nearY;
-
-        if (dx * dx + dy * dy < ballRadius * ballRadius) {
-          brickGrid[bi][bj].hp--;
-          Math.abs(dx) < Math.abs(dy) ? ball.dy = -ball.dy : ball.dx = -ball.dx;
-          new Audio("assets/sound/hit.mp3").play(); //če bi dal v const bi se slišalo samo enkrat ko bi jih več razbil.
-
-          if (brickGrid[bi][bj].hp === 0) {
-            bricksDestroyed++;
-            updateScoreUI();
-          }
-
-        }
-      }
-    }
-
-    //preveri če so vse opeke razbite
-    function checkWin() {
-      for (let i = 0; i < brickRows; i++) {
-        for (let j = 0; j < brickCols; j++) {
-          if (brickGrid[i][j].hp > 0) return;
-        }
-      }
-      clearInterval(gameLoopId);
-
-      const current = parseTimeToSeconds(timerText);
-      if (current != null) {
-        addLeaderboardEntry(current, getPlayerName() ?? "Player");
-        renderLeaderboard();
-
-        const best = getBestWinTimeSeconds();
-        if (best == null || current < best) {
-          setBestWinTimeSeconds(current);
-          setBestWinName(getPlayerName() ?? "Player");
-        }
-      }
-      updateBestTimeUI();
-
-      showWin(timerText);
-    }
-
-    if (ball.x + ball.dx > canvasWidth - ballRadius || ball.x + ball.dx < 0 + ballRadius)
-      ball.dx = -ball.dx;
-
-    if (ball.y + ball.dy < 0 + ballRadius)
-      ball.dy = -ball.dy;
-    else if (ball.y + ball.dy + ballRadius >= canvasHeight - paddleHeight) {
-      isTimerRunning = false;
-      if (ball.x + ballRadius >= paddleX && ball.x - ballRadius <= paddleX + paddleWidth) {
-        ball.dx = 8 * ((ball.x - (paddleX + paddleWidth / 2)) / paddleWidth);
-        ball.dy = -ball.dy;
-        isTimerRunning = true;
-      } else if (ball.y - ballRadius > canvasHeight) {
-        clearInterval(gameLoopId);
-        showGameOver(timerText);
-      }
-
-    }
-
-    ball.x += ball.dx;
-    ball.y += ball.dy;
-
-
-    //premik ploščice levo in desno
-    if (isRightPressed) {
-      if ((paddleX + paddleWidth) < canvasWidth) {
-        paddleX += 5;
-      } else {
-        paddleX = canvasWidth - paddleWidth;
-      }
-    }
-    else if (isLeftPressed) {
-      if (paddleX > 0) {
-        paddleX -= 5;
-      } else {
-        paddleX = 0;
-      }
-    }
-
-    const isPaddleBoosted = paddleWidth > paddleBaseWidth;
-
-    ctx.save();
-
-    if (isPaddleBoosted) {
-      const now = Date.now();
-      const pulse = (Math.sin(now / 120) + 1) / 2; // 0..1
-      const alpha = 0.25 + pulse * 0.55;
-
-      // glow behind paddle (more visible than relying on shadow alone)
-      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-      ctx.shadowColor = `rgba(255, 255, 255, ${alpha})`;
-      ctx.shadowBlur = 10 + pulse * 24;
-      rect(paddleX - 2, canvasHeight - paddleHeight - 2, paddleWidth + 4, paddleHeight + 4);
-
-      // reset shadow for the actual paddle fill
-      ctx.shadowBlur = 0;
-    }
-
-    ctx.fillStyle = paddlecolor;
-    rect(paddleX, canvasHeight - paddleHeight, paddleWidth, paddleHeight);
-
-    ctx.restore();
-
-    if (paddleWidth > paddleBaseWidth) {
-      let remaining = Math.max(0, paddleBoostUntil - Date.now()) / 1000;
-
-      if (remaining < 0) remaining = 0;
-
-      $("#powerupTimer").html("POWERUP: " + Math.ceil(remaining) + "s");
-      $("#powerupTimer").addClass("active");//da se pojavi
-    } else {
-      $("#powerupTimer").removeClass("active");//da se odstrani
-    }
-
-    //premik in risanje elementa, ki poveča paddle
-    if (powerupDrop.active) {
-      powerupDrop.y += powerupDrop.speed;
-      ctx.drawImage(imgDrop, powerupDrop.x, powerupDrop.y, powerupDrop.w, powerupDrop.h);
-    }
-
-    //ulov in povečanje paddle
-    if (powerupDrop.active &&
-      powerupDrop.y + powerupDrop.h >= canvasHeight - paddleHeight &&
-      powerupDrop.x + powerupDrop.w >= paddleX &&
-      powerupDrop.x <= paddleX + paddleWidth) {
-      powerupDrop.active = false;
-      paddleWidth = paddleBaseWidth + 50;
-      if (paddleBoostUntil > Date.now()) {
-        paddleBoostUntil += 7000;
-      } else {
-        paddleBoostUntil = Date.now() + 7000;
-      }
-      powerup.currentTime = 0;
-      powerup.volume = 0.4;
-      powerup.play();
-    }
-
-    if (paddleWidth > paddleBaseWidth && Date.now() >= paddleBoostUntil) {
-      paddleWidth = paddleBaseWidth;
-    }
-
-    //če element za povečavo paddle pade mimo
-    if (powerupDrop.active && powerupDrop.y > canvasHeight) {
-      powerupDrop.active = false;
-    }
-
-    for (let i = 0; i < brickRows; i++) {
-      for (let j = 0; j < brickCols; j++) {
-        const brick = brickGrid[i][j];
-        if (brick.hp > 0) {
-          drawBrick(
-            (j * (brickWidth + brickPadding)) + brickPadding,
-            (i * (brickHeight + brickPadding)) + brickPadding,
-            brick
-          );
-        }
-      }
-    }
-    checkWin();
-  }
-
-  let onStartKeyDown = null;
-
-  function startGame() {
-    if (hasStarted) return;
-    ensurePlayerName().then(() => {
-      if (hasStarted) return;
-      hasStarted = true;
-      setPlayButtonVisible(false);
-      init();
-      if (onStartKeyDown) document.removeEventListener("keydown", onStartKeyDown);
     });
-  }
 
-  if (playBtn) {
-    setPlayButtonVisible(true);
-    playBtn.addEventListener("click", startGame, { once: true });
+    function resetGame() {
+        clearInterval(timerId);
+        clearInterval(intervalId);
 
-    onStartKeyDown = (evt) => {
-      if (hasStarted) return;
-      if (evt.key === "Enter" || evt.key === " ") {
-        evt.preventDefault();
-        startGame();
-      }
-    };
-    document.addEventListener("keydown", onStartKeyDown);
-  } else {
-    // fallback: if the button is missing, keep old behavior
-    init();
-  }
+        x = 350;
+        y = 230;
+        dx = 2;
+        dy = 4;
 
-  ensurePlayerName();
-  updateScoreUI();
-  renderLeaderboard();
+        sekunde = 0;
+        start = true;
+
+        init_bricks();
+        init_paddle();
+    }
+
+    function startGame() {
+        init();
+        resetGame();
+        timerId = setInterval(timer, 1000);
+        intervalId = setInterval(draw, 10);
+    }
 }

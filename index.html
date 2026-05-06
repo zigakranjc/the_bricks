@@ -1,35 +1,39 @@
+<!DOCTYPE html>
 <html>
 
 <head>
     <link rel="stylesheet" href="style.css">
+    <title></title>
 </head>
 
 <body onload="drawIt()">
-    <div id="game">
-        <div id="bannerDiv">
-            <img src="assets/img/banner.png" alt="banner" id="banner">
-            <div id="powerupTimer">POWERUP</div>
+    <div id="bannerDiv">
+        <img src="assets/img/banner.png" alt="banner" id="banner">
+    </div>
+    <div id="main">
+        <div id="leftPanel">
+            <div id="about">
+                <button id="aboutBtn">About</button>
+            </div>
+            <div id="time">
+                <a>Time: --:--</a>
+            </div>
+            
         </div>
         <div id="canvasDiv">
-            <div id="stage">
-                <div id="leftPanel">
-                    <button id="aboutBtn">ABOUT</button>
-                    <div id="time">00:00</div>
-                    <div id="score"></div>
-                </div>
-                <button id="playBtn" type="button" aria-label="Play" title="Play"></button>
-                <canvas id="canvas" width="700" height="550"></canvas>
-                 <div id="rightPanel">
-                     <div class="panelTitle">LEADERBOARD</div>
-                     <ol id="leaderboardList"></ol>
-                 </div>
-             </div>
-         </div>
-     </div>
+            <canvas id="canvas" width="700" height="500"></canvas>
+            <button id="playBtn"></button>
+        </div>
+        <div id="rightPanel">
+            <div id="bestTime1"></div>
+            <div id="bestTime2"></div>
+            <div id="bestTime3"></div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="js/sweetAlert.js"></script>
     <script src="js/jquery.js"></script>
-    <script src="js/script.js"></script>  
+    <script src="js/sweetAlert.js"></script>
+    <script src="js/script.js"></script>
 </body>
 
 </html>
